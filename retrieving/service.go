@@ -89,7 +89,6 @@ func (s *service) parseCharacter(name string) (*character.Character, error) {
 
 	char, err := d2s.Parse(file)
 	if err != nil {
-		fmt.Println(name)
 		fmt.Println(err)
 		return nil, err
 	}

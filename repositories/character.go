@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/nokka/armory/character"
@@ -34,7 +33,6 @@ func (r *characterRepository) Update(character *character.Character) error {
 	defer sess.Close()
 
 	c := sess.DB(r.db).C("character")
-	fmt.Printf("trying to update %s", character.ID)
 	change := bson.M{"$set": bson.M{"d2s": character.D2s, "lastparsed": time.Now()}}
 	err := c.Update(bson.M{"id": character.ID}, change)
 	if err != nil {
