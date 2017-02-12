@@ -41,6 +41,7 @@ func decodeRetrieveCharacterRequest(_ context.Context, r *http.Request) (interfa
 }
 
 func encodeResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {
+
 	if e, ok := response.(errorer); ok && e.error() != nil {
 		encodeError(ctx, e.error(), w)
 		return nil
@@ -59,6 +60,8 @@ func encodeError(_ context.Context, err error, w http.ResponseWriter) {
 	switch err {
 	case ErrInvalidArgument:
 		w.WriteHeader(http.StatusBadRequest)
+	case ErrNonExistingCharacter:
+		w.WriteHeader(http.StatusNotFound)
 	default:
 		w.WriteHeader(http.StatusInternalServerError)
 	}

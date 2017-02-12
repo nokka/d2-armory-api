@@ -8,18 +8,15 @@ import (
 	"github.com/nokka/d2s"
 )
 
-// D2sID uniquely identifies a particular cargo.
-type D2sID string
-
 // Character is the central class in the domain model.
 type Character struct {
-	ID         D2sID          `json:"id"`
+	ID         string         `json:"d2s_id"`
 	D2s        *d2s.Character `json:"d2s"`
 	LastParsed time.Time      `json:"last_parsed"`
 }
 
 // New creates a new, unparsed Character.
-func New(id D2sID, char d2s.Character) *Character {
+func New(id string, char d2s.Character) *Character {
 	return &Character{
 		ID:         id,
 		D2s:        &char,
@@ -29,6 +26,8 @@ func New(id D2sID, char d2s.Character) *Character {
 
 // Repository provides access a character store.
 type Repository interface {
+	Find(string) *Character
+	Update(character *Character) error
 	Store(character *Character) error
 }
 

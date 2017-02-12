@@ -20,6 +20,7 @@ import (
 
 const (
 	defaultMongoDBURL = "127.0.0.1"
+	defaultD2sPath    = "/Users/stekon/go/src/github.com/nokka/armory/testdata/"
 	defaultDBName     = "armory"
 )
 
@@ -30,6 +31,7 @@ func main() {
 		listen       = flag.String("listen", ":8080", "HTTP listen address")
 		mongoDBURL   = flag.String("db.url", defaultMongoDBURL, "MongoDB URL")
 		databaseName = flag.String("db.name", dbname, "MongoDB database name")
+		d2spath      = flag.String("d2s.path", defaultD2sPath, "Path for parsing d2s files")
 	)
 
 	flag.Parse()
@@ -58,7 +60,7 @@ func main() {
 	characters, _ = repositories.NewCharacterRepository(*databaseName, session)
 
 	// Routing
-	rs := retrieving.NewService(characters)
+	rs := retrieving.NewService(characters, *d2spath)
 
 	mux := http.NewServeMux()
 	mux.Handle("/retrieving/", retrieving.MakeHandler(ctx, rs, httpLogger))

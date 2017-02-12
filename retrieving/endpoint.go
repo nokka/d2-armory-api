@@ -12,7 +12,7 @@ type retrieveCharacterRequest struct {
 }
 
 type retrieveCharacterResponse struct {
-	Character character.Character `json:"character"`
+	Character *character.Character `json:"character"`
 }
 
 func makeRetrieveCharacterEndpoint(s Service) endpoint.Endpoint {
