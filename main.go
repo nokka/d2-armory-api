@@ -28,7 +28,7 @@ func main() {
 	var (
 		dbname = envString("DB_NAME", defaultDBName)
 
-		listen       = flag.String("listen", ":8090", "HTTP listen address")
+		listen       = flag.String("listen", "127.0.0.1:8090", "HTTP listen address")
 		mongoDBURL   = flag.String("db.url", defaultMongoDBURL, "MongoDB URL")
 		databaseName = flag.String("db.name", dbname, "MongoDB database name")
 		d2spath      = flag.String("d2s.path", defaultD2sPath, "Path for parsing d2s files")
