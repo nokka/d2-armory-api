@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
 	"time"
 
 	"github.com/nokka/armory/character"
@@ -23,6 +24,10 @@ var ErrNonExistingCharacter = errors.New("The requested character does not exist
 // return an error.
 var ErrFailedToParse = errors.New("The requested character could not be parsed")
 
+// The name regexp required for character names, to enforce strict diablo rules
+// on the names to prevent missuse of the endpoint.
+const nameRegexp = "^[^-_][a-zA-Z]+[-_]?[a-zA-Z]+[^-_]$"
+
 // Service provides operations on d2s character data.
 type Service interface {
 	// GetCharacter will return the character with the given name.
@@ -36,6 +41,11 @@ type service struct {
 
 func (s *service) RetrieveCharacter(name string) (*character.Character, error) {
 	if name == "" {
+		return nil, ErrInvalidArgument
+	}
+
+	match, _ := regexp.MatchString(nameRegexp, name)
+	if !match {
 		return nil, ErrInvalidArgument
 	}
 
