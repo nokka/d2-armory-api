@@ -57,7 +57,16 @@ type errorer interface {
 
 // encode errors from business-logic layer
 func encodeError(_ context.Context, err error, w http.ResponseWriter) {
-	switch err {
+
+	var castedErr error
+	switch e := err.(type) {
+	case kithttp.Error:
+		castedErr = e.Err
+	default:
+		castedErr = err
+	}
+
+	switch castedErr {
 	case ErrInvalidArgument:
 		w.WriteHeader(http.StatusBadRequest)
 	case ErrNonExistingCharacter:
@@ -67,6 +76,6 @@ func encodeError(_ context.Context, err error, w http.ResponseWriter) {
 	}
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"error": err.Error(),
+		"error": castedErr.Error(),
 	})
 }
