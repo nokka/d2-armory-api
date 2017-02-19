@@ -26,7 +26,7 @@ var ErrFailedToParse = errors.New("The requested character could not be parsed")
 
 // The name regexp required for character names, to enforce strict diablo rules
 // on the names to prevent missuse of the endpoint.
-const nameRegexp = "^[^-_][a-zA-Z]+[-_]?[a-zA-Z]+[^-_]$"
+const nameRegexp = "^[a-zA-Z]+[_-]?[a-zA-Z]+$"
 
 // Service provides operations on d2s character data.
 type Service interface {
@@ -56,8 +56,8 @@ func (s *service) RetrieveCharacter(name string) (*character.Character, error) {
 		// Check the time when we last parsed it.
 		diff := time.Since(c.LastParsed)
 
-		// If we haven't parsed this char in 1 hour, lets parse it.
-		if diff.Hours() >= 1 {
+		// If we haven't parsed this char in the last 10 minutes, lets parse it.
+		if diff.Minutes() >= 10 {
 			parsed, err := s.parseCharacter(name)
 			if err != nil {
 				return nil, err
