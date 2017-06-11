@@ -42,8 +42,6 @@ func main() {
 
 	var logger log.Logger
 	logger = log.NewLogfmtLogger(os.Stderr)
-	logger = log.NewContext(logger).With("listen", *listen).With("caller", log.DefaultCaller)
-	httpLogger := log.NewContext(logger).With("component", "http")
 
 	// DB connection
 
@@ -63,7 +61,7 @@ func main() {
 	rs := retrieving.NewService(characters, *d2spath)
 
 	mux := http.NewServeMux()
-	mux.Handle("/retrieving/", retrieving.MakeHandler(ctx, rs, httpLogger))
+	mux.Handle("/retrieving/", retrieving.MakeHandler(ctx, rs, logger))
 	http.Handle("/", accessControl(mux))
 
 	errs := make(chan error, 2)

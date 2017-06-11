@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"context"
+
 	kitlog "github.com/go-kit/kit/log"
 	kithttp "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/mux"
-	"golang.org/x/net/context"
 )
 
 // MakeHandler returns a handler for the character service.
@@ -18,7 +19,6 @@ func MakeHandler(ctx context.Context, s Service, logger kitlog.Logger) http.Hand
 	}
 
 	retrieveCharacterHandler := kithttp.NewServer(
-		ctx,
 		makeRetrieveCharacterEndpoint(s),
 		decodeRetrieveCharacterRequest,
 		encodeResponse,
@@ -57,16 +57,7 @@ type errorer interface {
 
 // encode errors from business-logic layer
 func encodeError(_ context.Context, err error, w http.ResponseWriter) {
-
-	var castedErr error
-	switch e := err.(type) {
-	case kithttp.Error:
-		castedErr = e.Err
-	default:
-		castedErr = err
-	}
-
-	switch castedErr {
+	switch err {
 	case ErrInvalidArgument:
 		w.WriteHeader(http.StatusBadRequest)
 	case ErrNonExistingCharacter:
@@ -76,6 +67,6 @@ func encodeError(_ context.Context, err error, w http.ResponseWriter) {
 	}
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"error": castedErr.Error(),
+		"error": err.Error(),
 	})
 }
