@@ -105,7 +105,7 @@ func (s *service) parseCharacter(name string) (*character.Character, error) {
 
 	c := character.Character{
 		ID:         name,
-		D2s:        &char,
+		D2s:        char,
 		LastParsed: time.Now(),
 	}
 

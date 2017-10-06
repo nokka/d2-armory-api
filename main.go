@@ -44,7 +44,6 @@ func main() {
 	logger = log.NewLogfmtLogger(os.Stderr)
 
 	// DB connection
-
 	session, err := mgo.Dial(*mongoDBURL)
 	if err != nil {
 		panic(err)
