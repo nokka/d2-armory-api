@@ -20,7 +20,7 @@ import (
 
 const (
 	defaultMongoDBURL = "127.0.0.1"
-	defaultD2sPath    = "/Users/stekon/go/src/github.com/nokka/armory/testdata/"
+	defaultD2sPath    = "/home/slash/characters"
 	defaultDBName     = "armory"
 )
 
