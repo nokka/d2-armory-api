@@ -1,8 +1,10 @@
 package character
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
+	"time"
 
 	"github.com/nokka/d2-armory-api/internal/domain"
 )
@@ -33,6 +35,25 @@ func (s Service) Parse(name string) (*domain.Character, error) {
 
 	c, err := s.characters.Find(name)
 	if err != nil {
+		if errors.Is(err, domain.ErrNotFound) {
+			// Character didn't exist at all, so lets parse and store it.
+			d2schar, err := parseCharacter(fmt.Sprintf("%s/%s", s.d2spath, name))
+			if err != nil {
+				return nil, err
+			}
+			character := domain.Character{
+				ID:         name,
+				D2s:        d2schar,
+				LastParsed: time.Now(),
+			}
+
+			if err := s.characters.Store(&character); err != nil {
+				return nil, err
+			}
+
+			return &character, nil
+		}
+		// The error wasn't 404, so just return it.
 		return nil, err
 	}
 
