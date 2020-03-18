@@ -4,11 +4,10 @@ go 1.13
 
 require (
 	github.com/go-chi/chi v4.0.3+incompatible
-	github.com/go-kit/kit v0.10.0
-	github.com/gorilla/mux v1.7.4
+	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/nokka/d2s v0.0.0-20200317205104-fa90b4beee99
-	github.schibsted.io/lendo-core/go-errors v0.0.0-20181120092653-6f964b58ae33 // indirect
-	github.schibsted.io/lendo-core/go-http v0.0.0-20200302121710-825f3b758f4d // indirect
-	github.schibsted.io/lendo-core/go-jwt v0.0.0-20190528091757-018ab6f412d5 // indirect
+	golang.org/x/net v0.0.0-20200301022130-244492dfa37a // indirect
+	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
+	gopkg.in/yaml.v2 v2.2.8 // indirect
 )

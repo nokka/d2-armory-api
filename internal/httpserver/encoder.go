@@ -23,13 +23,13 @@ func (e *encoder) Response(w http.ResponseWriter, response interface{}) error {
 
 // errorResponse will encapsulate errors to be transferred over http.
 type errorResponse struct {
-	Message string `json:"message"`
+	Error string `json:"error"`
 }
 
 // encodeError will determine status code and content sent over the API.
 func (e *encoder) Error(w http.ResponseWriter, err error) {
 	resp := errorResponse{
-		Message: err.Error(),
+		Error: err.Error(),
 	}
 
 	w.Header().Set("Content-type", "application/json; charset=utf-8")

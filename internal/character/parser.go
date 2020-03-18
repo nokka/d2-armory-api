@@ -3,14 +3,15 @@ package character
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/nokka/d2-armory-api/internal/domain"
 	"github.com/nokka/d2s"
 )
 
-func parseCharacter(path string) (*d2s.Character, error) {
-	fmt.Println(path)
-	file, err := os.Open(path)
+func parseCharacter(name, path string) (*domain.Character, error) {
+	// Character path on disk.
+	file, err := os.Open(fmt.Sprintf("%s/%s", path, name))
 	if err != nil {
 		return nil, fmt.Errorf("character binary does not exist: %w", domain.ErrNotFound)
 	}
@@ -19,10 +20,16 @@ func parseCharacter(path string) (*d2s.Character, error) {
 	defer file.Close()
 
 	// Parse the actual .d2s binary file.
-	char, err := d2s.Parse(file)
+	d2schar, err := d2s.Parse(file)
 	if err != nil {
 		return nil, fmt.Errorf("binary parse error: %w", err)
 	}
 
-	return char, nil
+	character := domain.Character{
+		ID:         name,
+		D2s:        d2schar,
+		LastParsed: time.Now(),
+	}
+
+	return &character, nil
 }

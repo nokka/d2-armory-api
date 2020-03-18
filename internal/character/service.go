@@ -2,7 +2,6 @@ package character
 
 import (
 	"errors"
-	"fmt"
 	"regexp"
 	"time"
 
@@ -33,34 +32,47 @@ func (s Service) Parse(name string) (*domain.Character, error) {
 		return nil, domain.ErrInvalidArgument
 	}
 
+	// Read character from db cache.
 	c, err := s.characters.Find(name)
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
 			// Character didn't exist at all, so lets parse and store it.
-			d2schar, err := parseCharacter(fmt.Sprintf("%s/%s", s.d2spath, name))
+			parsed, err := parseCharacter(name, s.d2spath)
 			if err != nil {
 				return nil, err
 			}
-			character := domain.Character{
-				ID:         name,
-				D2s:        d2schar,
-				LastParsed: time.Now(),
-			}
 
-			if err := s.characters.Store(&character); err != nil {
+			if err := s.characters.Store(parsed); err != nil {
 				return nil, err
 			}
 
-			return &character, nil
+			return parsed, nil
 		}
-		// The error wasn't 404, so just return it.
+
+		// The error wasn't ErrNotFound, so just return it.
 		return nil, err
 	}
 
-	fmt.Println("AFTER FIND")
-	fmt.Println(c)
+	// Character already exists, let's check how long since we parsed it.
+	diff := time.Since(c.LastParsed)
 
-	return &domain.Character{}, nil
+	if diff.Minutes() >= 3 {
+		parsed, err := parseCharacter(name, s.d2spath)
+		if err != nil {
+			return nil, err
+		}
+
+		// Update the existing record in the db.
+		err = s.characters.Update(parsed)
+		if err != nil {
+			return nil, err
+		}
+
+		return parsed, nil
+	}
+
+	// We parsed this character less than 3 minutes ago so return the db version.
+	return c, nil
 }
 
 // NewService constructs a new parsing service with all the dependencies.
