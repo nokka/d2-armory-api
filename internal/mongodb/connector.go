@@ -1,7 +1,7 @@
 package mongodb
 
 import (
-	"fmt"
+	"log"
 	"sync"
 	"time"
 
@@ -47,13 +47,14 @@ func (c *Connector) connectionLoop(dsn string) {
 			for {
 				if err := sess.Ping(); err == nil {
 					if c.session == nil {
+						log.Println("connected to mongodb")
 						c.sessionLock.Lock()
 						c.session = sess
 						c.sessionLock.Unlock()
 					}
 				} else {
+					log.Println("failed to ping mongodb, removing stale session")
 					sess.Close()
-
 					c.sessionLock.Lock()
 					c.session = nil
 					c.sessionLock.Unlock()
@@ -64,8 +65,7 @@ func (c *Connector) connectionLoop(dsn string) {
 				time.Sleep(5 * time.Second)
 			}
 		} else {
-			fmt.Println(err)
-			// TODO: Log that we couldn't connect.
+			log.Printf("failed to connect to mongodb: %s", err)
 		}
 
 		time.Sleep(5 * time.Second)

@@ -8,7 +8,8 @@ import (
 	"github.com/nokka/d2-armory-api/internal/domain"
 )
 
-// Dependencies.
+// characterRepository is the interface representation of the data layer
+// the service depend on.
 type characterRepository interface {
 	Find(id string) (*domain.Character, error)
 	Update(character *domain.Character) error
@@ -17,8 +18,9 @@ type characterRepository interface {
 
 // Service performs all operations on parsing characters.
 type Service struct {
-	d2spath    string
-	characters characterRepository
+	d2spath       string
+	characters    characterRepository
+	cacheDuration time.Duration
 }
 
 // The name regexp required for character names, to enforce strict diablo rules
@@ -56,7 +58,7 @@ func (s Service) Parse(name string) (*domain.Character, error) {
 	// Character already exists, let's check how long since we parsed it.
 	diff := time.Since(c.LastParsed)
 
-	if diff.Minutes() >= 3 {
+	if diff >= s.cacheDuration {
 		parsed, err := parseCharacter(name, s.d2spath)
 		if err != nil {
 			return nil, err
@@ -76,9 +78,10 @@ func (s Service) Parse(name string) (*domain.Character, error) {
 }
 
 // NewService constructs a new parsing service with all the dependencies.
-func NewService(d2spath string, characterRepository characterRepository) *Service {
+func NewService(d2spath string, characterRepository characterRepository, cacheDuration time.Duration) *Service {
 	return &Service{
-		d2spath:    d2spath,
-		characters: characterRepository,
+		d2spath:       d2spath,
+		characters:    characterRepository,
+		cacheDuration: cacheDuration,
 	}
 }

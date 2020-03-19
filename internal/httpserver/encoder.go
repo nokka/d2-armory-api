@@ -15,10 +15,9 @@ func newEncoder() *encoder {
 }
 
 // Response will determine Content-Type and encode the response properly.
-func (e *encoder) Response(w http.ResponseWriter, response interface{}) error {
+func (e *encoder) Response(w http.ResponseWriter, response interface{}) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	json.NewEncoder(w).Encode(response)
-	return nil
+	_ = json.NewEncoder(w).Encode(response)
 }
 
 // errorResponse will encapsulate errors to be transferred over http.
@@ -48,6 +47,5 @@ func (e *encoder) Error(w http.ResponseWriter, err error) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 
-	json.NewEncoder(w).Encode(resp)
-
+	_ = json.NewEncoder(w).Encode(resp)
 }

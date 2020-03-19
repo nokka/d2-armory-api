@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/nokka/d2-armory-api/internal/character"
 	"github.com/nokka/d2-armory-api/internal/httpserver"
@@ -21,6 +22,7 @@ func main() {
 		mongoUsername = env.String("MONGO_USERNAME", "")
 		mongoPassword = env.String("MONGO_PASSWORD", "")
 		d2sPath       = env.String("D2S_PATH", "")
+		cacheDuration = env.String("CACHE_DURATION", "3m")
 	)
 
 	if d2sPath == "" {
@@ -35,6 +37,12 @@ func main() {
 
 	if mongoPassword == "" {
 		log.Println("Mongodb user password missing")
+		os.Exit(0)
+	}
+
+	cd, err := time.ParseDuration(cacheDuration)
+	if err != nil {
+		log.Printf("failed to parse cache duration, %s", err)
 		os.Exit(0)
 	}
 
@@ -53,7 +61,7 @@ func main() {
 	characterRepository := mongodb.NewCharacterRepository(databaseName, c)
 
 	// Services.
-	characterService := character.NewService(d2sPath, characterRepository)
+	characterService := character.NewService(d2sPath, characterRepository, cd)
 
 	// Channel to receive errors on.
 	errorChannel := make(chan error)

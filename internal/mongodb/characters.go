@@ -29,8 +29,6 @@ func (r *CharacterRepository) Find(id string) (*domain.Character, error) {
 		return nil, mongoErr(err)
 	}
 
-	fmt.Println("RETURNING RESULT")
-
 	return &result, nil
 }
 

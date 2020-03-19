@@ -1,0 +1,5 @@
+/vendor
+README.md
+Makefile
+.travis.yml
+.gitignore
