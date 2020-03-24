@@ -59,8 +59,7 @@ func (s Service) Parse(ctx context.Context, name string) (*domain.Character, err
 	// Character already exists, let's check how long since we parsed it.
 	diff := time.Since(c.LastParsed)
 
-	//if diff >= s.cacheDuration {
-	if diff >= time.Duration(1*time.Second) {
+	if diff >= s.cacheDuration {
 		parsed, err := parseCharacter(name, s.d2spath)
 		if err != nil {
 			return nil, err
