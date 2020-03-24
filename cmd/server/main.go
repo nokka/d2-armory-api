@@ -10,14 +10,11 @@ import (
 	"time"
 
 	"github.com/nokka/d2-armory-api/internal/character"
-	"github.com/nokka/d2-armory-api/internal/domain"
 	"github.com/nokka/d2-armory-api/internal/httpserver"
-	"github.com/nokka/d2-armory-api/internal/mongodb"
+	"github.com/nokka/d2-armory-api/internal/mgo"
 	"github.com/nokka/d2-armory-api/pkg/env"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readpref"
-	"gopkg.in/mgo.v2/bson"
 )
 
 func main() {
@@ -52,21 +49,6 @@ func main() {
 		os.Exit(0)
 	}
 
-	// Setup MongoDB.
-	c := mongodb.NewConnector()
-
-	//dsn := fmt.Sprintf("mongodb://%s:%s@%s", mongoUsername, mongoPassword, mongoDBHost)
-
-	/*c.Connect(fmt.Sprintf(
-		"mongodb://%s:%s@%s/%s",
-		mongoUsername,
-		mongoPassword,
-		mongoDBHost,
-		databaseName,
-	))*/
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	defer cancel()
-
 	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017").
 		SetAuth(
 			options.Credential{
@@ -75,13 +57,15 @@ func main() {
 				Password:   "not_secure_at_all",
 			})
 
-	client, err := mongo.Connect(ctx, clientOptions)
+	client, err := mongo.Connect(context.Background(), clientOptions)
 	if err != nil {
-		log.Println(err)
+		log.Println("failed to connect to mongodb", err)
 		os.Exit(0)
 	}
 
-	go func() {
+	log.Println("connected to mongodb")
+
+	/*go func() {
 		for {
 			fmt.Println("starting ping")
 			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
@@ -107,14 +91,14 @@ func main() {
 
 			time.Sleep(5 * time.Second)
 		}
-	}()
+	}()*/
 
 	// NEW Mongodb.
 	//cl := mgo.NewConnector()
 	//cl.Connect(context.Background(), dsn)
 
 	// Repositories.
-	characterRepository := mongodb.NewCharacterRepository(databaseName, c)
+	characterRepository := mgo.NewCharacterRepository(databaseName, client)
 
 	// Services.
 	characterService := character.NewService(d2sPath, characterRepository, cd)

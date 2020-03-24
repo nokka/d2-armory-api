@@ -6,14 +6,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
-	"github.com/nokka/d2-armory-api/internal/domain"
 )
-
-// characterService represents the functionality we need to perform our character requests.
-type characterService interface {
-	// Parse parses a character binary.
-	Parse(name string) (*domain.Character, error)
-}
 
 // Server is the HTTP server listener.
 type Server struct {
