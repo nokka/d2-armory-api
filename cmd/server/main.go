@@ -29,17 +29,17 @@ func main() {
 	)
 
 	if d2sPath == "" {
-		log.Println("D2S path missing")
+		log.Println("d2s path missing")
 		os.Exit(0)
 	}
 
 	if mongoUsername == "" {
-		log.Println("Mongodb username missing")
+		log.Println("mongodb username missing")
 		os.Exit(0)
 	}
 
 	if mongoPassword == "" {
-		log.Println("Mongodb user password missing")
+		log.Println("mongodb user password missing")
 		os.Exit(0)
 	}
 
@@ -52,9 +52,9 @@ func main() {
 	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017").
 		SetAuth(
 			options.Credential{
-				AuthSource: "armory",
-				Username:   "armory",
-				Password:   "not_secure_at_all",
+				AuthSource: databaseName,
+				Username:   mongoUsername,
+				Password:   mongoPassword,
 			})
 
 	client, err := mongo.Connect(context.Background(), clientOptions)
@@ -64,38 +64,6 @@ func main() {
 	}
 
 	log.Println("connected to mongodb")
-
-	/*go func() {
-		for {
-			fmt.Println("starting ping")
-			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-			defer cancel()
-
-			err := client.Ping(ctx, readpref.Primary())
-			fmt.Println("ping error", err)
-
-			if err == nil {
-				var result domain.Character
-				filter := bson.M{"id": "cathans"}
-				findCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-				defer cancel()
-
-				collection := client.Database("armory").Collection("character")
-				err = collection.FindOne(findCtx, filter).Decode(&result)
-				if err != nil {
-					log.Fatal(err)
-				}
-
-				fmt.Println(result)
-			}
-
-			time.Sleep(5 * time.Second)
-		}
-	}()*/
-
-	// NEW Mongodb.
-	//cl := mgo.NewConnector()
-	//cl.Connect(context.Background(), dsn)
 
 	// Repositories.
 	characterRepository := mgo.NewCharacterRepository(databaseName, client)
