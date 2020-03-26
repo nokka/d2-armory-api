@@ -25,4 +25,7 @@ const (
 
 	// ErrConflict is returned when there's a conflict with a resource.
 	ErrConflict = Error("conflict error")
+
+	// ErrInternal is returned when the error is unspecified.
+	ErrInternal = Error("internal error")
 )

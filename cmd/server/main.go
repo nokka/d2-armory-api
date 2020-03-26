@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -10,8 +11,10 @@ import (
 
 	"github.com/nokka/d2-armory-api/internal/character"
 	"github.com/nokka/d2-armory-api/internal/httpserver"
-	"github.com/nokka/d2-armory-api/internal/mongodb"
+	"github.com/nokka/d2-armory-api/internal/mgo"
 	"github.com/nokka/d2-armory-api/pkg/env"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func main() {
@@ -26,17 +29,17 @@ func main() {
 	)
 
 	if d2sPath == "" {
-		log.Println("D2S path missing")
+		log.Println("d2s path missing")
 		os.Exit(0)
 	}
 
 	if mongoUsername == "" {
-		log.Println("Mongodb username missing")
+		log.Println("mongodb username missing")
 		os.Exit(0)
 	}
 
 	if mongoPassword == "" {
-		log.Println("Mongodb user password missing")
+		log.Println("mongodb user password missing")
 		os.Exit(0)
 	}
 
@@ -46,19 +49,24 @@ func main() {
 		os.Exit(0)
 	}
 
-	// Setup MongoDB.
-	c := mongodb.NewConnector()
+	clientOptions := options.Client().ApplyURI("mongodb://" + mongoDBHost).
+		SetAuth(
+			options.Credential{
+				AuthSource: databaseName,
+				Username:   mongoUsername,
+				Password:   mongoPassword,
+			})
 
-	c.Connect(fmt.Sprintf(
-		"%s:%s@%s/%s",
-		mongoUsername,
-		mongoPassword,
-		mongoDBHost,
-		databaseName,
-	))
+	client, err := mongo.Connect(context.Background(), clientOptions)
+	if err != nil {
+		log.Println("failed to connect to mongodb", err)
+		os.Exit(0)
+	}
+
+	log.Println("connected to mongodb")
 
 	// Repositories.
-	characterRepository := mongodb.NewCharacterRepository(databaseName, c)
+	characterRepository := mgo.NewCharacterRepository(databaseName, client)
 
 	// Services.
 	characterService := character.NewService(d2sPath, characterRepository, cd)

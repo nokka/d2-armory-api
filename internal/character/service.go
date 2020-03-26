@@ -1,6 +1,7 @@
 package character
 
 import (
+	"context"
 	"errors"
 	"regexp"
 	"time"
@@ -11,9 +12,9 @@ import (
 // characterRepository is the interface representation of the data layer
 // the service depend on.
 type characterRepository interface {
-	Find(id string) (*domain.Character, error)
-	Update(character *domain.Character) error
-	Store(character *domain.Character) error
+	Find(ctx context.Context, id string) (*domain.Character, error)
+	Update(ctx context.Context, character *domain.Character) error
+	Store(ctx context.Context, character *domain.Character) error
 }
 
 // Service performs all operations on parsing characters.
@@ -28,14 +29,14 @@ type Service struct {
 const nameRegexp = "^[a-zA-Z]+[_-]?[a-zA-Z]+$"
 
 // Parse will perform the actual parsing of the character.
-func (s Service) Parse(name string) (*domain.Character, error) {
+func (s Service) Parse(ctx context.Context, name string) (*domain.Character, error) {
 	match, _ := regexp.MatchString(nameRegexp, name)
 	if !match {
 		return nil, domain.ErrInvalidArgument
 	}
 
 	// Read character from db cache.
-	c, err := s.characters.Find(name)
+	c, err := s.characters.Find(ctx, name)
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
 			// Character didn't exist at all, so lets parse and store it.
@@ -44,7 +45,7 @@ func (s Service) Parse(name string) (*domain.Character, error) {
 				return nil, err
 			}
 
-			if err := s.characters.Store(parsed); err != nil {
+			if err := s.characters.Store(ctx, parsed); err != nil {
 				return nil, err
 			}
 
@@ -65,7 +66,7 @@ func (s Service) Parse(name string) (*domain.Character, error) {
 		}
 
 		// Update the existing record in the db.
-		err = s.characters.Update(parsed)
+		err = s.characters.Update(ctx, parsed)
 		if err != nil {
 			return nil, err
 		}
