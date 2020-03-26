@@ -2,12 +2,11 @@ package mgo
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/nokka/d2-armory-api/internal/domain"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"gopkg.in/mgo.v2/bson"
 )
 
 var (
@@ -39,22 +38,31 @@ func (r *CharacterRepository) Find(ctx context.Context, id string) (*domain.Char
 
 // Update will update the given resource.
 func (r *CharacterRepository) Update(ctx context.Context, character *domain.Character) error {
-	change := bson.M{"$set": bson.M{"d2s": character.D2s, "lastparsed": time.Now()}}
+	// Changeset, update the binary and time of parsing.
+	change := bson.M{
+		"$set": bson.M{
+			"d2s":        character.D2s,
+			"lastparsed": time.Now(),
+		},
+	}
 
-	updateResult, err := r.client.Database(r.db).Collection(collectionName).
+	_, err := r.client.Database(r.db).Collection(collectionName).
 		UpdateOne(ctx, bson.M{"id": character.ID}, change)
-
 	if err != nil {
 		return mongoErr(err)
 	}
-
-	fmt.Printf("Matched %v documents and updated %v documents.\n", updateResult.MatchedCount, updateResult.ModifiedCount)
 
 	return nil
 }
 
 // Store will store the new resource.
 func (r *CharacterRepository) Store(ctx context.Context, character *domain.Character) error {
+	_, err := r.client.Database(r.db).Collection(collectionName).
+		InsertOne(ctx, character)
+	if err != nil {
+		return mongoErr(err)
+	}
+
 	return nil
 }
 

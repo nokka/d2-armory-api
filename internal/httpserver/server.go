@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	"log"
 	"net"
 	"net/http"
 
@@ -29,6 +30,8 @@ func (s *Server) Open() error {
 	server := http.Server{
 		Handler: s.Handler(),
 	}
+
+	log.Println("starting HTTP server on:", s.addr)
 
 	return server.Serve(s.listener)
 }

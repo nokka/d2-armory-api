@@ -19,8 +19,8 @@ import (
 
 func main() {
 	var (
-		httpAddress = env.String("HTTP_ADDRESS", ":80")
-		//mongoDBHost   = env.String("MONGO_HOST", "mongodb:27017")
+		httpAddress   = env.String("HTTP_ADDRESS", ":80")
+		mongoDBHost   = env.String("MONGO_HOST", "mongodb:27017")
 		databaseName  = env.String("MONGO_DB", "armory")
 		mongoUsername = env.String("MONGO_USERNAME", "")
 		mongoPassword = env.String("MONGO_PASSWORD", "")
@@ -49,7 +49,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017").
+	clientOptions := options.Client().ApplyURI("mongodb://" + mongoDBHost).
 		SetAuth(
 			options.Credential{
 				AuthSource: databaseName,
