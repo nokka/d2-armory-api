@@ -46,6 +46,9 @@ func (s *Server) Handler() http.Handler {
 	r.Route("/health", newHealthHandler().Routes)
 	r.Route("/api/v1/characters", newCharacterHandler(s.encoder, s.characterService).Routes)
 
+	// Deprecated handler, supported for consumers who rely on it.
+	r.Route("/retrieving/v1/character", newCharacterHandler(s.encoder, s.characterService).Routes)
+
 	return r
 }
 
