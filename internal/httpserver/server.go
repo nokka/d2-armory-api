@@ -4,6 +4,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
@@ -28,7 +29,8 @@ func (s *Server) Open() error {
 
 	// Create an http server.
 	server := http.Server{
-		Handler: s.Handler(),
+		Handler:     http.TimeoutHandler(s.Handler(), (2 * time.Second), "connection timeout"),
+		ReadTimeout: 5 * time.Second,
 	}
 
 	log.Println("starting HTTP server on:", s.addr)

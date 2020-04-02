@@ -9,6 +9,11 @@ import (
 	"github.com/nokka/d2-armory-api/internal/domain"
 )
 
+// parser is the interface representation of a d2 parser the service depend on.
+type parser interface {
+	Parse(name string) (*domain.Character, error)
+}
+
 // characterRepository is the interface representation of the data layer
 // the service depend on.
 type characterRepository interface {
@@ -19,7 +24,7 @@ type characterRepository interface {
 
 // Service performs all operations on parsing characters.
 type Service struct {
-	d2spath       string
+	parser        parser
 	characters    characterRepository
 	cacheDuration time.Duration
 }
@@ -40,7 +45,7 @@ func (s Service) Parse(ctx context.Context, name string) (*domain.Character, err
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
 			// Character didn't exist at all, so lets parse and store it.
-			parsed, err := parseCharacter(name, s.d2spath)
+			parsed, err := s.parser.Parse(name)
 			if err != nil {
 				return nil, err
 			}
@@ -60,7 +65,7 @@ func (s Service) Parse(ctx context.Context, name string) (*domain.Character, err
 	diff := time.Since(c.LastParsed)
 
 	if diff >= s.cacheDuration {
-		parsed, err := parseCharacter(name, s.d2spath)
+		parsed, err := s.parser.Parse(name)
 		if err != nil {
 			return nil, err
 		}
@@ -79,9 +84,9 @@ func (s Service) Parse(ctx context.Context, name string) (*domain.Character, err
 }
 
 // NewService constructs a new parsing service with all the dependencies.
-func NewService(d2spath string, characterRepository characterRepository, cacheDuration time.Duration) *Service {
+func NewService(parser parser, characterRepository characterRepository, cacheDuration time.Duration) *Service {
 	return &Service{
-		d2spath:       d2spath,
+		parser:        parser,
 		characters:    characterRepository,
 		cacheDuration: cacheDuration,
 	}

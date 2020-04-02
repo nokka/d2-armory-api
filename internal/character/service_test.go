@@ -32,7 +32,7 @@ func TestParseCharacter(t *testing.T) {
 			args: args{
 				name:          "nokka",
 				ctx:           context.TODO(),
-				cacheDuration: time.Duration(1 * time.Minute),
+				cacheDuration: 1 * time.Minute,
 			},
 			fields: fields{
 				characterRepository: mock.CharacterRepository{

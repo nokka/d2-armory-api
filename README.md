@@ -1,6 +1,6 @@
 # Armory
 
-The armory backend is responsible for storing and parsing d2s characters.
+The armory backend is responsible for storing and parsing d2s characters. :)
 
 ## MongoDB
 
