@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/cors"
 )
 
 // Server is the HTTP server listener.
@@ -44,6 +46,19 @@ func (s *Server) Handler() http.Handler {
 
 	// Middleware for logging requests.
 	r.Use(middleware.Logger)
+
+	cors := cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},
+		// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: true,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
+	})
+
+	fmt.Println(cors)
+	r.Use(cors.Handler)
 
 	r.Route("/health", newHealthHandler().Routes)
 	r.Route("/api/v1/characters", newCharacterHandler(s.encoder, s.characterService).Routes)
