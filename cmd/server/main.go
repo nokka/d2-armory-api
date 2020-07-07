@@ -12,9 +12,11 @@ import (
 	"github.com/nokka/d2-armory-api/internal/character"
 	"github.com/nokka/d2-armory-api/internal/httpserver"
 	"github.com/nokka/d2-armory-api/internal/mgo"
+	"github.com/nokka/d2-armory-api/internal/parsing"
 	"github.com/nokka/d2-armory-api/pkg/env"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
 func main() {
@@ -57,9 +59,24 @@ func main() {
 				Password:   mongoPassword,
 			})
 
-	client, err := mongo.Connect(context.Background(), clientOptions)
+	// Context used for mongo operations, to time them out and cancel their context.
+	mgoCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err != nil {
+		log.Println("failed to create context with timeout for mongodb connection", err)
+		os.Exit(0)
+	}
+
+	client, err := mongo.Connect(mgoCtx, clientOptions)
 	if err != nil {
 		log.Println("failed to connect to mongodb", err)
+		os.Exit(0)
+	}
+
+	err = client.Ping(mgoCtx, readpref.Primary())
+	if err != nil {
+		log.Println("failed to ping mongodb", err)
 		os.Exit(0)
 	}
 
@@ -68,8 +85,9 @@ func main() {
 	// Repositories.
 	characterRepository := mgo.NewCharacterRepository(databaseName, client)
 
-	// Services.
-	characterService := character.NewService(d2sPath, characterRepository, cd)
+	// Business logic services.
+	parser := parsing.NewParser(d2sPath)
+	characterService := character.NewService(parser, characterRepository, cd)
 
 	// Channel to receive errors on.
 	errorChannel := make(chan error)

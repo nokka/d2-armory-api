@@ -34,7 +34,11 @@ func (h characterHandler) parseCharacter(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	h.encoder.Response(w, char)
+	h.encoder.Response(w, struct {
+		Character *domain.Character `json:"character"`
+	}{
+		Character: char,
+	})
 }
 
 func newCharacterHandler(encoder *encoder, characterService characterService) *characterHandler {
