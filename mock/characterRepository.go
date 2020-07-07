@@ -17,19 +17,19 @@ type CharacterRepository struct {
 }
 
 // Find calls the FindFn and registers the invoke.
-func (r CharacterRepository) Find(ctx context.Context, id string) (*domain.Character, error) {
+func (r *CharacterRepository) Find(ctx context.Context, id string) (*domain.Character, error) {
 	r.FindInvoked = true
 	return r.FindFn(ctx, id)
 }
 
 // Update calls the UpdateFn and registers the invoke.
-func (r CharacterRepository) Update(ctx context.Context, character *domain.Character) error {
+func (r *CharacterRepository) Update(ctx context.Context, character *domain.Character) error {
 	r.UpdateInvoked = true
 	return r.UpdateFn(ctx, character)
 }
 
 // Store calls the StoreFn and registers the invoke.
-func (r CharacterRepository) Store(ctx context.Context, character *domain.Character) error {
+func (r *CharacterRepository) Store(ctx context.Context, character *domain.Character) error {
 	r.StoreInvoked = true
 	return r.StoreFn(ctx, character)
 }

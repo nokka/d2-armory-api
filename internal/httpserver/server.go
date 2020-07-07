@@ -1,7 +1,6 @@
 package httpserver
 
 import (
-	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -57,7 +56,6 @@ func (s *Server) Handler() http.Handler {
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	})
 
-	fmt.Println(cors)
 	r.Use(cors.Handler)
 
 	r.Route("/health", newHealthHandler().Routes)
