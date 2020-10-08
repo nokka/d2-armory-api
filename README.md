@@ -5,25 +5,6 @@ It also exposes an HTTP API to get characters as JSON.
 
 --- 
 
-## API
-
-### Get a character by name
-```http
-GET /api/v1/characters?name=nokka
-```
-
-### Deprecated handler for consumers who rely on it
-```http
-GET /retrieving/v1/character?name=nokka
-```
-
-### Health check
-```http
-GET /health
-```
-
----
-
 ## Environment variables
 
 | Name           	| Default         	|
@@ -37,6 +18,25 @@ GET /health
 | CACHE_DURATION 	| `3m`            	|
 
 --- 
+
+## API
+
+#### Get a character by name
+```http
+GET /api/v1/characters?name=nokka
+```
+
+#### Deprecated handler for consumers who rely on it
+```http
+GET /retrieving/v1/character?name=nokka
+```
+
+#### Health check
+```http
+GET /health
+```
+
+---
 
 ## Data storage
 The armory API relies on [mongodb](https://www.mongodb.com/) to store the data.
