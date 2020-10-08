@@ -1,21 +1,43 @@
 # Armory
 
-The armory backend is responsible for storing and parsing d2s characters. :)
+The armory backend is responsible for storing and parsing d2s characters. 
+It also exposes an HTTP API to get characters as JSON.
 
-## MongoDB
+--- 
 
-### Start
+## API
 
-```bash
-$ mongod -dbpath=/path/to/mongodata
+### Get a character by name
+```http
+GET /api/v1/characters?name=nokka
 ```
 
-## Flags
-These are flags that can be overridden when running the binary.
+### Deprecated handler for consumers who rely on it
+```http
+GET /retrieving/v1/character?name=nokka
+```
 
-| Name     | Default                  |
-|----------|--------------------------|
-| listen   | `127.0.0.1:8090`         |
-| db.url   | `127.0.0.1`              |
-| db.name  | `armory`                 |
-| d2s.path | `/home/slash/characters` |
+### Health check
+```http
+GET /health
+```
+
+---
+
+## Environment variables
+
+| Name           	| Default         	|
+|----------------	|-----------------	|
+| HTTP_ADDRESS   	| `:80`           	|
+| MONGO_HOST     	| `mongodb:27017` 	|
+| MONGO_DB       	| `armory`        	|
+| MONGO_USERNAME 	|                 	|
+| MONGO_PASSWORD 	|                 	|
+| D2S_PATH       	|                 	|
+| CACHE_DURATION 	| `3m`            	|
+
+--- 
+
+## Data storage
+The armory API relies on [mongodb](https://www.mongodb.com/) to store the data.
+
