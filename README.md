@@ -1,4 +1,4 @@
-# Armory
+# d2 armory api
 
 The armory backend is responsible for storing and parsing d2s characters. 
 It also exposes an HTTP API to get characters as JSON.
