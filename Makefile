@@ -13,6 +13,9 @@ docker/build:
 docker/tag:
 	docker tag $(GHCR_COMMIT_TAG) $(GHCR_REPO):$(VALID_TAG)
 
+docker/push:
+	docker push $(GHCR_REPO)
+	
 # docker/login:
 # 	echo $(CR_TOKEN)
 # 	echo $(secrets.CR_TOKEN)
