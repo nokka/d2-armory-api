@@ -1,3 +1,7 @@
+GHCR_REPO=ghcr.io/nokka/d2-armory-api
+GHCR_COMMIT_TAG=$(GHCR_REPO):commit-$(GITHUB_SHA)
+VALID_TAG=$(shell echo $(TAG_NAME) | sed 's/[^a-z0-9_\.-]/-/g')
+
 # Builds a local docker image for local use.
 docker/local:
 	docker build -f Dockerfile -t d2-armory-api:local .
