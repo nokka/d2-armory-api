@@ -16,10 +16,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Build the Docker image
+    - name: Build docker image
       run: make docker/build
 
-    - name: Build the Docker image
+    - name: Tag docker image
       run: make docker/tag TAG_NAME=latest
 
     - name: Login to GitHub Container Registry

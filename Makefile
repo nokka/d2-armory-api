@@ -15,11 +15,6 @@ docker/tag:
 
 docker/push:
 	docker push $(GHCR_REPO)
-	
-# docker/login:
-# 	echo $(CR_TOKEN)
-# 	echo $(secrets.CR_TOKEN)
-# 	echo $(secrets.CR_TOKEN) | docker login ghcr.io -u nokka --password-stdin
 
 test:
 	go test -v ./...
