@@ -53,6 +53,8 @@ github.com/markbates/safe v1.0.1/go.mod h1:nAqgmRi7cY2nqMc92/bSEeQA+R4OheNU2T1kN
 github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe/go.mod h1:wL8QJuTMNUDYhXwkmfOly8iTdp5TEcJFWZD2D7SIkUc=
 github.com/nokka/d2s v0.0.0-20200614181809-60fb591edf35 h1:OjyzK3CCpUcbQawNXS86z+HFQP1siqE/pM8RxgRjrQ8=
 github.com/nokka/d2s v0.0.0-20200614181809-60fb591edf35/go.mod h1:W4Gv35FHy1VDQoiEC0u7qmK/mlcL4vpNqzcSDDibSSA=
+github.com/nokka/d2s v1.2.0 h1:hmACs4oQhv8nNsdlGbUR5KXMw7UDGfN54o120EiECoY=
+github.com/nokka/d2s v1.2.0/go.mod h1:xLa9/d01xmFQI8GKH2uHC8iL6WAUPUk0T1WgsccL2OM=
 github.com/pelletier/go-toml v1.4.0/go.mod h1:PN7xzY2wHTK0K9p34ErDQMlFxa51Fk0OUruD3k1mMwo=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.8.1 h1:iURUrRGxPUNPdy5/HRSm+Yj6okJ6UtLINN0Q9M4+h3I=
