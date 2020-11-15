@@ -35,29 +35,22 @@ func main() {
 		os.Exit(0)
 	}
 
-	if mongoUsername == "" {
-		log.Println("mongodb username missing")
-		os.Exit(0)
-	}
-
-	if mongoPassword == "" {
-		log.Println("mongodb user password missing")
-		os.Exit(0)
-	}
-
 	cd, err := time.ParseDuration(cacheDuration)
 	if err != nil {
 		log.Printf("failed to parse cache duration, %s", err)
 		os.Exit(0)
 	}
 
-	clientOptions := options.Client().ApplyURI("mongodb://" + mongoDBHost).
-		SetAuth(
-			options.Credential{
-				AuthSource: databaseName,
-				Username:   mongoUsername,
-				Password:   mongoPassword,
-			})
+	clientOptions := options.Client().ApplyURI("mongodb://" + mongoDBHost)
+
+	// If a username is supplied, auth with it.
+	if mongoUsername != "" {
+		clientOptions.SetAuth(options.Credential{
+			AuthSource: databaseName,
+			Username:   mongoUsername,
+			Password:   mongoPassword,
+		})
+	}
 
 	// Context used for mongo operations, to time them out and cancel their context.
 	mgoCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
