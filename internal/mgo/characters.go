@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	// collectionName is the name of the collection we'll use for all queries.
-	collectionName = "character"
+	// characterCollectionName is the name of the collection we'll use for all queries.
+	characterCollectionName = "character"
 )
 
 // CharacterRepository handles all operations on characters.
@@ -26,9 +26,8 @@ func (r *CharacterRepository) Find(ctx context.Context, id string) (*domain.Char
 	var char domain.Character
 
 	// Find the character by id in the collection.
-	err := r.client.Database(r.db).Collection(collectionName).
+	err := r.client.Database(r.db).Collection(characterCollectionName).
 		FindOne(ctx, bson.M{"id": id}).Decode(&char)
-
 	if err != nil {
 		return nil, mongoErr(err)
 	}
@@ -46,7 +45,7 @@ func (r *CharacterRepository) Update(ctx context.Context, character *domain.Char
 		},
 	}
 
-	_, err := r.client.Database(r.db).Collection(collectionName).
+	_, err := r.client.Database(r.db).Collection(characterCollectionName).
 		UpdateOne(ctx, bson.M{"id": character.ID}, change)
 	if err != nil {
 		return mongoErr(err)
@@ -57,7 +56,7 @@ func (r *CharacterRepository) Update(ctx context.Context, character *domain.Char
 
 // Store will store the new resource.
 func (r *CharacterRepository) Store(ctx context.Context, character *domain.Character) error {
-	_, err := r.client.Database(r.db).Collection(collectionName).
+	_, err := r.client.Database(r.db).Collection(characterCollectionName).
 		InsertOne(ctx, character)
 	if err != nil {
 		return mongoErr(err)

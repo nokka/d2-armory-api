@@ -33,10 +33,10 @@ func mongoErr(err error) error {
 	switch err {
 	case mongo.ErrNoDocuments,
 		mongo.ErrNilDocument:
-		return domain.ErrNotFound
+		return fmt.Errorf("%w", domain.ErrNotFound)
 	case mongo.ErrClientDisconnected,
 		mongo.ErrUnacknowledgedWrite:
-		return domain.ErrTemporary
+		return fmt.Errorf("%w", domain.ErrTemporary)
 	}
 
 	return fmt.Errorf("unspecified error: %s, %w", err, domain.ErrInternal)

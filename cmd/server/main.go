@@ -13,6 +13,7 @@ import (
 	"github.com/nokka/d2-armory-api/internal/httpserver"
 	"github.com/nokka/d2-armory-api/internal/mgo"
 	"github.com/nokka/d2-armory-api/internal/parsing"
+	"github.com/nokka/d2-armory-api/internal/statistics"
 	"github.com/nokka/d2-armory-api/pkg/env"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -77,17 +78,19 @@ func main() {
 
 	// Repositories.
 	characterRepository := mgo.NewCharacterRepository(databaseName, client)
+	statisticsRepository := mgo.NewStatisticsRepository(databaseName, client)
 
 	// Business logic services.
 	parser := parsing.NewParser(d2sPath)
 	characterService := character.NewService(parser, characterRepository, cd)
+	statisticsService := statistics.NewService(statisticsRepository)
 
 	// Channel to receive errors on.
 	errorChannel := make(chan error)
 
 	// HTTP server.
 	go func() {
-		httpServer := httpserver.NewServer(httpAddress, characterService)
+		httpServer := httpserver.NewServer(httpAddress, characterService, statisticsService)
 		errorChannel <- httpServer.Open()
 	}()
 
