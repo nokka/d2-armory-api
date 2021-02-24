@@ -22,17 +22,29 @@ import (
 
 func main() {
 	var (
-		httpAddress   = env.String("HTTP_ADDRESS", ":80")
-		mongoDBHost   = env.String("MONGO_HOST", "mongodb:27017")
-		databaseName  = env.String("MONGO_DB", "armory")
-		mongoUsername = env.String("MONGO_USERNAME", "")
-		mongoPassword = env.String("MONGO_PASSWORD", "")
-		d2sPath       = env.String("D2S_PATH", "")
-		cacheDuration = env.String("CACHE_DURATION", "3m")
+		httpAddress        = env.String("HTTP_ADDRESS", ":80")
+		mongoDBHost        = env.String("MONGO_HOST", "mongodb:27017")
+		databaseName       = env.String("MONGO_DB", "armory")
+		mongoUsername      = env.String("MONGO_USERNAME", "")
+		mongoPassword      = env.String("MONGO_PASSWORD", "")
+		d2sPath            = env.String("D2S_PATH", "")
+		cacheDuration      = env.String("CACHE_DURATION", "3m")
+		statisticsUser     = env.String("STATISTICS_USER", "")
+		statisticsPassword = env.String("STATISTICS_PASSWORD", "")
 	)
 
 	if d2sPath == "" {
 		log.Println("d2s path missing")
+		os.Exit(0)
+	}
+
+	if statisticsUser == "" {
+		log.Println("statistics credentials user is missing")
+		os.Exit(0)
+	}
+
+	if statisticsPassword == "" {
+		log.Println("statistics credentials password is missing")
 		os.Exit(0)
 	}
 
@@ -88,9 +100,18 @@ func main() {
 	// Channel to receive errors on.
 	errorChannel := make(chan error)
 
+	// Credentials for posting statistics map.
+	credentials := map[string]string{
+		statisticsUser: statisticsPassword,
+	}
 	// HTTP server.
 	go func() {
-		httpServer := httpserver.NewServer(httpAddress, characterService, statisticsService)
+		httpServer := httpserver.NewServer(
+			httpAddress,
+			characterService,
+			statisticsService,
+			credentials,
+		)
 		errorChannel <- httpServer.Open()
 	}()
 

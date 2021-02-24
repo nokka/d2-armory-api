@@ -17,6 +17,7 @@ type Server struct {
 	addr              string
 	characterService  characterService
 	statisticsService statisticsService
+	credentials       map[string]string
 }
 
 // Open will open a tcp listener to serve http requests.
@@ -48,7 +49,7 @@ func (s *Server) Handler() http.Handler {
 
 	r.Route("/health", newHealthHandler().Routes)
 	r.Route("/api/v1/characters", newCharacterHandler(s.encoder, s.characterService).Routes)
-	r.Route("/api/v1/statistics", newStatisticsHandler(s.encoder, s.statisticsService).Routes)
+	r.Route("/api/v1/statistics", newStatisticsHandler(s.encoder, s.statisticsService, s.credentials).Routes)
 
 	// Deprecated handler, supported for consumers who rely on it.
 	r.Route("/retrieving/v1/character", newCharacterHandler(s.encoder, s.characterService).Routes)
@@ -57,11 +58,12 @@ func (s *Server) Handler() http.Handler {
 }
 
 // NewServer returns a new server with all dependencies.
-func NewServer(addr string, characterService characterService, statisticsService statisticsService) *Server {
+func NewServer(addr string, characterService characterService, statisticsService statisticsService, credentials map[string]string) *Server {
 	return &Server{
 		addr:              addr,
 		encoder:           newEncoder(),
 		characterService:  characterService,
 		statisticsService: statisticsService,
+		credentials:       credentials,
 	}
 }

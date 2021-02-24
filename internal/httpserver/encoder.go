@@ -17,7 +17,18 @@ func newEncoder() *encoder {
 // Response will determine Content-Type and encode the response properly.
 func (e *encoder) Response(w http.ResponseWriter, response interface{}) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	_ = json.NewEncoder(w).Encode(response)
+	if response != nil {
+		_ = json.NewEncoder(w).Encode(response)
+	}
+}
+
+// Response will determine Content-Type and encode the response properly.
+func (e *encoder) StatusResponse(w http.ResponseWriter, response interface{}, statusCode int) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(statusCode)
+	if response != nil {
+		_ = json.NewEncoder(w).Encode(response)
+	}
 }
 
 // errorResponse will encapsulate errors to be transferred over http.

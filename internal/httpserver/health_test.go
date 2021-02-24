@@ -8,7 +8,7 @@ import (
 
 func TestHealthCheckHandler(t *testing.T) {
 	// Setup our http server we want to test on.
-	srv := NewServer(":80", nil, nil)
+	srv := NewServer(":80", nil, nil, nil)
 
 	// Setup a new test recorder.
 	recorder := httptest.NewRecorder()

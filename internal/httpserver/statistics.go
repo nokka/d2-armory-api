@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 	"github.com/nokka/d2-armory-api/internal/domain"
 )
 
@@ -22,10 +23,14 @@ type statisticsService interface {
 type statisticsHandler struct {
 	encoder           *encoder
 	statisticsService statisticsService
+	credentials       map[string]string
 }
 
 func (h statisticsHandler) Routes(router chi.Router) {
-	router.Post("/", h.postStatistics)
+	// Posting statistics requires authentication.
+	router.With(middleware.BasicAuth("statistics", h.credentials)).Post("/", h.postStatistics)
+
+	// Get statistics by character.
 	router.Get("/", h.getStatistics)
 }
 
@@ -43,7 +48,7 @@ func (h statisticsHandler) postStatistics(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	h.encoder.Response(w, "statistics")
+	h.encoder.StatusResponse(w, map[string]string{"status": "accepted"}, http.StatusAccepted)
 }
 
 func (h statisticsHandler) getStatistics(w http.ResponseWriter, r *http.Request) {
@@ -59,9 +64,10 @@ func (h statisticsHandler) getStatistics(w http.ResponseWriter, r *http.Request)
 	h.encoder.Response(w, stats)
 }
 
-func newStatisticsHandler(encoder *encoder, statisticsService statisticsService) *statisticsHandler {
+func newStatisticsHandler(encoder *encoder, statisticsService statisticsService, credentials map[string]string) *statisticsHandler {
 	return &statisticsHandler{
 		encoder:           encoder,
 		statisticsService: statisticsService,
+		credentials:       credentials,
 	}
 }
