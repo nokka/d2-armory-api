@@ -3,6 +3,7 @@ package statistics
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/nokka/d2-armory-api/internal/domain"
 )
@@ -41,6 +42,11 @@ func (s Service) Parse(ctx context.Context, stats []domain.StatisticsRequest) er
 		if _, valid := validDifficulties[req.Difficulty]; !valid {
 			return fmt.Errorf("difficulty %s supplied for character %s, %w", req.Difficulty, req.Character, domain.ErrRequest)
 		}
+
+		// Lower case the character name to keep consistency.
+		req.Account = strings.ToLower(req.Account)
+		req.Character = strings.ToLower(req.Character)
+
 		// Upsert each character stat request.
 		err := s.repository.Upsert(ctx, req)
 		if err != nil {
