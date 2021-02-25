@@ -33,7 +33,7 @@ func TestParse(t *testing.T) {
 			args: args{
 				ctx: context.TODO(),
 				stats: []domain.StatisticsRequest{
-					{Account: "nokka"},
+					{Character: "nokka", Difficulty: domain.DifficultyHell},
 				},
 			},
 			fields: fields{
@@ -50,7 +50,7 @@ func TestParse(t *testing.T) {
 			args: args{
 				ctx: context.TODO(),
 				stats: []domain.StatisticsRequest{
-					{Account: "nokka"},
+					{Character: "nokka", Difficulty: domain.DifficultyNormal},
 				},
 			},
 			fields: fields{
@@ -61,6 +61,18 @@ func TestParse(t *testing.T) {
 				},
 			},
 			upsertInvoked: true,
+			expectedError: true,
+		},
+		{
+			name: "invalid difficulty supplied",
+			args: args{
+				ctx: context.TODO(),
+				stats: []domain.StatisticsRequest{
+					{Character: "nokka", Difficulty: "invalid"},
+				},
+			},
+			fields:        fields{},
+			upsertInvoked: false,
 			expectedError: true,
 		},
 	}
