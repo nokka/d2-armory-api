@@ -3,6 +3,7 @@ package mgo
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/nokka/d2-armory-api/internal/domain"
 	"go.mongodb.org/mongo-driver/bson"
@@ -21,8 +22,8 @@ type StatisticsRepository struct {
 }
 
 // GetByCharacter will return statistics for the character.
-func (r *StatisticsRepository) GetByCharacter(ctx context.Context, character string) (*domain.StatisticsRequest, error) {
-	var char domain.StatisticsRequest
+func (r *StatisticsRepository) GetByCharacter(ctx context.Context, character string) (*domain.CharacterStatistics, error) {
+	var char domain.CharacterStatistics
 
 	err := r.client.Database(r.db).Collection(statCollectionName).
 		FindOne(ctx, bson.M{"character": character}).Decode(&char)
@@ -40,21 +41,23 @@ func (r *StatisticsRepository) Upsert(ctx context.Context, stat domain.Statistic
 		"character": stat.Character,
 	}
 
-	// Root document updates.
+	difficulty := strings.ToLower(stat.Difficulty)
+
+	// Difficulty updates.
 	values := map[string]interface{}{
-		"champions":  stat.Champions,
-		"uniques":    stat.Uniques,
-		"totalkills": stat.TotalKills,
+		fmt.Sprintf("%s.champions", difficulty):   stat.Champions,
+		fmt.Sprintf("%s.uniques", difficulty):     stat.Uniques,
+		fmt.Sprintf("%s.total_kills", difficulty): stat.TotalKills,
 	}
 
 	// Looping over special monsters to add them to upsert.
 	for monster, val := range stat.Special {
-		values[fmt.Sprintf("special.%s", monster)] = val
+		values[fmt.Sprintf("%s.special.%s", difficulty, monster)] = val
 	}
 
 	// Looping over regular monsters to add them to upsert.
 	for monster, val := range stat.Regular {
-		values[fmt.Sprintf("regular.%s", monster)] = val
+		values[fmt.Sprintf("%s.regular.%s", difficulty, monster)] = val
 	}
 
 	result, err := r.client.Database(r.db).Collection(statCollectionName).
@@ -72,9 +75,44 @@ func (r *StatisticsRepository) Upsert(ctx context.Context, stat domain.Statistic
 }
 
 // Internal store function to create the document for the first time.
-func (r *StatisticsRepository) store(ctx context.Context, stat domain.StatisticsRequest) error {
+func (r *StatisticsRepository) store(ctx context.Context, request domain.StatisticsRequest) error {
+	// Initiate character document, be explicit about the maps to avoid upsert errors on nil.
+	character := domain.CharacterStatistics{
+		Account:   request.Account,
+		Character: request.Character,
+		Normal: domain.Stats{
+			Special: make(map[string]int, 0),
+			Regular: make(map[string]int, 0),
+		},
+		Nightmare: domain.Stats{
+			Special: make(map[string]int, 0),
+			Regular: make(map[string]int, 0),
+		},
+		Hell: domain.Stats{
+			Special: make(map[string]int, 0),
+			Regular: make(map[string]int, 0),
+		},
+	}
+
+	stats := domain.Stats{
+		Uniques:    request.Uniques,
+		Champions:  request.Champions,
+		TotalKills: request.TotalKills,
+		Special:    request.Special,
+		Regular:    request.Regular,
+	}
+
+	switch request.Difficulty {
+	case domain.DifficultyNormal:
+		character.Normal = stats
+	case domain.DifficultyNightmare:
+		character.Nightmare = stats
+	case domain.DifficultyHell:
+		character.Hell = stats
+	}
+
 	_, err := r.client.Database(r.db).Collection(statCollectionName).
-		InsertOne(ctx, stat)
+		InsertOne(ctx, character)
 	if err != nil {
 		return mongoErr(err)
 	}

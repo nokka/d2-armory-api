@@ -13,7 +13,7 @@ import (
 // statisticsService encapsulates the business logic around statistics.
 type statisticsService interface {
 	// Gets the character statistics.
-	GetCharacter(ctx context.Context, character string) (*domain.StatisticsRequest, error)
+	GetCharacter(ctx context.Context, character string) (*domain.CharacterStatistics, error)
 
 	// Parse parses a character binary.
 	Parse(ctx context.Context, stats []domain.StatisticsRequest) error

@@ -8,14 +8,14 @@ import (
 
 // StatisticsRepository is a mock implementation of the statistics repository.
 type StatisticsRepository struct {
-	GetByCharacterFn      func(ctx context.Context, character string) (*domain.StatisticsRequest, error)
+	GetByCharacterFn      func(ctx context.Context, character string) (*domain.CharacterStatistics, error)
 	GetByCharacterInvoked bool
 	UpsertFn              func(ctx context.Context, stat domain.StatisticsRequest) error
 	UpsertInvoked         bool
 }
 
 // GetByCharacter calls the GetByCharacterFn and registers the invoke.
-func (r *StatisticsRepository) GetByCharacter(ctx context.Context, character string) (*domain.StatisticsRequest, error) {
+func (r *StatisticsRepository) GetByCharacter(ctx context.Context, character string) (*domain.CharacterStatistics, error) {
 	r.GetByCharacterInvoked = true
 	return r.GetByCharacterFn(ctx, character)
 }
