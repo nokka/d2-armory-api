@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -31,6 +32,7 @@ func main() {
 		cacheDuration      = env.String("CACHE_DURATION", "3m")
 		statisticsUser     = env.String("STATISTICS_USER", "")
 		statisticsPassword = env.String("STATISTICS_PASSWORD", "")
+		corsEnabled        = env.String("CORS_ENABLED", "false")
 	)
 
 	if d2sPath == "" {
@@ -51,6 +53,12 @@ func main() {
 	cd, err := time.ParseDuration(cacheDuration)
 	if err != nil {
 		log.Printf("failed to parse cache duration, %s", err)
+		os.Exit(0)
+	}
+
+	cors, err := strconv.ParseBool(corsEnabled)
+	if err != nil {
+		log.Printf("failed to parse cors enabled, %s", err)
 		os.Exit(0)
 	}
 
@@ -111,6 +119,7 @@ func main() {
 			characterService,
 			statisticsService,
 			credentials,
+			cors,
 		)
 		errorChannel <- httpServer.Open()
 	}()

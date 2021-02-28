@@ -24,7 +24,6 @@ type StatisticsRepository struct {
 // GetByCharacter will return statistics for the character.
 func (r *StatisticsRepository) GetByCharacter(ctx context.Context, character string) (*domain.CharacterStatistics, error) {
 	var char domain.CharacterStatistics
-
 	err := r.client.Database(r.db).Collection(statCollectionName).
 		FindOne(ctx, bson.M{"character": character}).Decode(&char)
 	if err != nil {
@@ -45,8 +44,6 @@ func (r *StatisticsRepository) Upsert(ctx context.Context, stat domain.Statistic
 
 	// Difficulty updates.
 	values := map[string]interface{}{
-		fmt.Sprintf("%s.champions", difficulty):   stat.Champions,
-		fmt.Sprintf("%s.uniques", difficulty):     stat.Uniques,
 		fmt.Sprintf("%s.total_kills", difficulty): stat.TotalKills,
 	}
 
@@ -56,8 +53,9 @@ func (r *StatisticsRepository) Upsert(ctx context.Context, stat domain.Statistic
 	}
 
 	// Looping over regular monsters to add them to upsert.
-	for monster, val := range stat.Regular {
-		values[fmt.Sprintf("%s.regular.%s", difficulty, monster)] = val
+	for area, val := range stat.Area {
+		values[fmt.Sprintf("%s.area.%s.kills", difficulty, area)] = val.Kills
+		values[fmt.Sprintf("%s.area.%s.time", difficulty, area)] = val.Time
 	}
 
 	result, err := r.client.Database(r.db).Collection(statCollectionName).
@@ -82,24 +80,22 @@ func (r *StatisticsRepository) store(ctx context.Context, request domain.Statist
 		Character: request.Character,
 		Normal: domain.Stats{
 			Special: make(map[string]int, 0),
-			Regular: make(map[string]int, 0),
+			Area:    make(map[string]domain.AreaStats, 0),
 		},
 		Nightmare: domain.Stats{
 			Special: make(map[string]int, 0),
-			Regular: make(map[string]int, 0),
+			Area:    make(map[string]domain.AreaStats, 0),
 		},
 		Hell: domain.Stats{
 			Special: make(map[string]int, 0),
-			Regular: make(map[string]int, 0),
+			Area:    make(map[string]domain.AreaStats, 0),
 		},
 	}
 
 	stats := domain.Stats{
-		Uniques:    request.Uniques,
-		Champions:  request.Champions,
 		TotalKills: request.TotalKills,
 		Special:    request.Special,
-		Regular:    request.Regular,
+		Area:       request.Area,
 	}
 
 	switch request.Difficulty {
