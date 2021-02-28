@@ -52,7 +52,7 @@ func (r *StatisticsRepository) Upsert(ctx context.Context, stat domain.Statistic
 		values[fmt.Sprintf("%s.special.%s", difficulty, monster)] = val
 	}
 
-	// Looping over regular monsters to add them to upsert.
+	// Looping over area statistics to add them to upsert.
 	for area, val := range stat.Area {
 		values[fmt.Sprintf("%s.area.%s.kills", difficulty, area)] = val.Kills
 		values[fmt.Sprintf("%s.area.%s.time", difficulty, area)] = val.Time
