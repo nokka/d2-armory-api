@@ -3,6 +3,7 @@ package statistics
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/nokka/d2-armory-api/internal/domain"
@@ -34,6 +35,44 @@ func (s Service) GetCharacter(ctx context.Context, character string) (*domain.Ch
 	}
 
 	return char, nil
+}
+
+func getTopAreas(areas map[string]domain.AreaStats) map[string]domain.AreaStats {
+	// Since maps are unordered by nature we need to temporarily
+	// keep the areas in a struct and return a new map.
+	type tmp struct {
+		area  string
+		kills uint
+		time  uint
+	}
+
+	data := make([]tmp, 0)
+
+	for area, vals := range areas {
+		data = append(data, tmp{
+			area:  area,
+			kills: vals.Kills,
+			time:  vals.Time,
+		})
+	}
+
+	sort.SliceStable(data, func(i, j int) bool {
+		return data[i].time > data[j].time
+	})
+
+	fmt.Println(data)
+
+	topAreas := map[string]domain.AreaStats{}
+
+	for i, v := range data[:10] {
+		topAreas[v.area] = domain.AreaStats{
+			Time:  v.time,
+			Kills: v.kills,
+		}
+		fmt.Println(i, v.area, v.time)
+	}
+
+	return topAreas
 }
 
 // Parse will perform the storage of a statistics request.
