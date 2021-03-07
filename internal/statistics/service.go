@@ -15,6 +15,10 @@ var validDifficulties = map[string]struct{}{
 	domain.DifficultyHell:      {},
 }
 
+// Max data points is used to limit number of data points being returned
+// since areas for example can host 138 entries.
+const maxDataPoints = 8
+
 // characterRepository is the interface representation of the data layer
 // the service depend on.
 type statisticsRepository interface {
@@ -34,7 +38,63 @@ func (s Service) GetCharacter(ctx context.Context, character string) (*domain.Ch
 		return nil, err
 	}
 
+	// Limit number of areas, to avoid showing all 138.
+	if len(char.Normal.Area) > maxDataPoints {
+		char.Normal.Area = getTopAreas((char.Normal.Area))
+	}
+
+	if len(char.Nightmare.Area) > maxDataPoints {
+		char.Nightmare.Area = getTopAreas((char.Nightmare.Area))
+	}
+
+	if len(char.Hell.Area) > maxDataPoints {
+		char.Hell.Area = getTopAreas((char.Hell.Area))
+	}
+
+	// Limit number of monsters, to avoid showing way too many.
+	if len(char.Normal.Special) > maxDataPoints {
+		char.Normal.Special = getTopSpecials(char.Normal.Special)
+	}
+
+	if len(char.Nightmare.Special) > maxDataPoints {
+		char.Nightmare.Special = getTopSpecials(char.Nightmare.Special)
+	}
+
+	if len(char.Hell.Special) > maxDataPoints {
+		char.Hell.Special = getTopSpecials(char.Hell.Special)
+	}
+
 	return char, nil
+}
+
+func getTopSpecials(monsters map[string]int) map[string]int {
+	// Since maps are unordered by nature we need to temporarily
+	// keep the kills in a struct and return a new map.
+	type tmp struct {
+		monster string
+		kills   int
+	}
+
+	data := make([]tmp, 0)
+
+	for monster, kills := range monsters {
+		data = append(data, tmp{
+			monster: monster,
+			kills:   kills,
+		})
+	}
+
+	sort.SliceStable(data, func(i, j int) bool {
+		return data[i].kills > data[j].kills
+	})
+
+	topMonsters := map[string]int{}
+
+	for _, v := range data[:maxDataPoints] {
+		topMonsters[v.monster] = v.kills
+	}
+
+	return topMonsters
 }
 
 func getTopAreas(areas map[string]domain.AreaStats) map[string]domain.AreaStats {
@@ -60,16 +120,13 @@ func getTopAreas(areas map[string]domain.AreaStats) map[string]domain.AreaStats 
 		return data[i].time > data[j].time
 	})
 
-	fmt.Println(data)
-
 	topAreas := map[string]domain.AreaStats{}
 
-	for i, v := range data[:10] {
+	for _, v := range data[:maxDataPoints] {
 		topAreas[v.area] = domain.AreaStats{
 			Time:  v.time,
 			Kills: v.kills,
 		}
-		fmt.Println(i, v.area, v.time)
 	}
 
 	return topAreas
