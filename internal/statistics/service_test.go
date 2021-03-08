@@ -105,12 +105,14 @@ func TestGetCharacter(t *testing.T) {
 	}
 
 	tests := []struct {
-		name          string
-		args          args
-		fields        fields
-		expectedError bool
-		normalAreas   int
-		excludedAreas []string
+		name             string
+		args             args
+		fields           fields
+		expectedError    bool
+		normalAreas      int
+		excludedAreas    []string
+		normalSpecial    int
+		excludedSpecials []string
 	}{
 		{
 			name: "get character successful",
@@ -167,6 +169,40 @@ func TestGetCharacter(t *testing.T) {
 				"Blood moor",
 			},
 		},
+		{
+			name: "get character exclude special monsters",
+			args: args{
+				ctx:  context.TODO(),
+				name: "nokka",
+			},
+			fields: fields{
+				statisticsRepository: mock.StatisticsRepository{
+					GetByCharacterFn: func(ctx context.Context, character string) (*domain.CharacterStatistics, error) {
+						return &domain.CharacterStatistics{
+							Normal: domain.Stats{
+								Special: map[string]int{
+									"Andariel":    42,
+									"Baal":        13,
+									"Corpsefire":  12,
+									"Coldcrow":    11,
+									"Diablo":      30,
+									"Duriel":      100,
+									"Mephisto":    20,
+									"Nihlatalak":  202,
+									"Blood Raven": 202,
+									"Griswold":    1,
+								},
+							},
+						}, nil
+					},
+				},
+			},
+			normalSpecial: 8,
+			excludedSpecials: []string{
+				"Griswold",
+				"Coldcrow",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -186,6 +222,12 @@ func TestGetCharacter(t *testing.T) {
 			for _, name := range tt.excludedAreas {
 				if _, exists := stats.Normal.Area[name]; exists {
 					t.Errorf("did not expect area %s to still be in the map", name)
+				}
+			}
+
+			for _, name := range tt.excludedSpecials {
+				if _, exists := stats.Normal.Special[name]; exists {
+					t.Errorf("did not expect special monster %s to still be in the map", name)
 				}
 			}
 		})
