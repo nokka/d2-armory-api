@@ -20,6 +20,7 @@ type Server struct {
 	statisticsService statisticsService
 	credentials       map[string]string
 	corsEnabled       bool
+	loggingEnabled    bool
 }
 
 // Open will open a tcp listener to serve http requests.
@@ -46,8 +47,10 @@ func (s *Server) Open() error {
 func (s *Server) Handler() http.Handler {
 	r := chi.NewRouter()
 
-	// Middleware for logging requests.
-	r.Use(middleware.Logger)
+	if s.loggingEnabled {
+		// Middleware for logging requests.
+		r.Use(middleware.Logger)
+	}
 
 	if s.corsEnabled {
 		cors := cors.New(cors.Options{
@@ -74,7 +77,7 @@ func (s *Server) Handler() http.Handler {
 }
 
 // NewServer returns a new server with all dependencies.
-func NewServer(addr string, characterService characterService, statisticsService statisticsService, credentials map[string]string, corsEnabled bool) *Server {
+func NewServer(addr string, characterService characterService, statisticsService statisticsService, credentials map[string]string, corsEnabled bool, loggingEnabled bool) *Server {
 	return &Server{
 		addr:              addr,
 		encoder:           newEncoder(),
@@ -82,5 +85,6 @@ func NewServer(addr string, characterService characterService, statisticsService
 		statisticsService: statisticsService,
 		credentials:       credentials,
 		corsEnabled:       corsEnabled,
+		loggingEnabled:    loggingEnabled,
 	}
 }

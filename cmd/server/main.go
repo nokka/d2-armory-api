@@ -33,6 +33,7 @@ func main() {
 		statisticsUser     = env.String("STATISTICS_USER", "")
 		statisticsPassword = env.String("STATISTICS_PASSWORD", "")
 		corsEnabled        = env.String("CORS_ENABLED", "false")
+		logRequests        = env.String("LOG_REQUESTS", "false")
 	)
 
 	if d2sPath == "" {
@@ -59,6 +60,12 @@ func main() {
 	cors, err := strconv.ParseBool(corsEnabled)
 	if err != nil {
 		log.Printf("failed to parse cors enabled, %s", err)
+		os.Exit(0)
+	}
+
+	logging, err := strconv.ParseBool(logRequests)
+	if err != nil {
+		log.Printf("failed to parse log requests, %s", err)
 		os.Exit(0)
 	}
 
@@ -120,6 +127,7 @@ func main() {
 			statisticsService,
 			credentials,
 			cors,
+			logging,
 		)
 		errorChannel <- httpServer.Open()
 	}()

@@ -19,6 +19,7 @@ It also exposes an HTTP API to get characters as JSON.
 | STATISTICS_USER     	|                 	|
 | STATISTICS_PASSWORD 	|                 	|
 | CORS_ENABLED        	| `false`         	|
+| LOG_REQUESTS        	| `false`         	|
 
 --- 
 
