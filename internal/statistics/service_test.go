@@ -6,27 +6,28 @@ import (
 	"testing"
 
 	"github.com/nokka/d2-armory-api/internal/domain"
-
-	"github.com/nokka/d2-armory-api/mock"
 )
 
 func TestParse(t *testing.T) {
 	type args struct {
-		name  string
 		ctx   context.Context
 		stats []domain.StatisticsRequest
 	}
 
 	type fields struct {
-		statisticsRepository mock.StatisticsRepository
+		statisticsRepository *statisticsRepositoryMock
+	}
+
+	type calls struct {
+		upsertCalls int
 	}
 
 	tests := []struct {
 		name          string
 		args          args
 		fields        fields
+		calls         calls
 		expectedError bool
-		upsertInvoked bool
 	}{
 		{
 			name: "parse successful",
@@ -37,13 +38,15 @@ func TestParse(t *testing.T) {
 				},
 			},
 			fields: fields{
-				statisticsRepository: mock.StatisticsRepository{
-					UpsertFn: func(ctx context.Context, stat domain.StatisticsRequest) error {
+				statisticsRepository: &statisticsRepositoryMock{
+					UpsertFunc: func(ctx context.Context, stat domain.StatisticsRequest) error {
 						return nil
 					},
 				},
 			},
-			upsertInvoked: true,
+			calls: calls{
+				upsertCalls: 1,
+			},
 		},
 		{
 			name: "parse error",
@@ -54,13 +57,15 @@ func TestParse(t *testing.T) {
 				},
 			},
 			fields: fields{
-				statisticsRepository: mock.StatisticsRepository{
-					UpsertFn: func(ctx context.Context, stat domain.StatisticsRequest) error {
+				statisticsRepository: &statisticsRepositoryMock{
+					UpsertFunc: func(ctx context.Context, stat domain.StatisticsRequest) error {
 						return errors.New("something went wrong")
 					},
 				},
 			},
-			upsertInvoked: true,
+			calls: calls{
+				upsertCalls: 1,
+			},
 			expectedError: true,
 		},
 		{
@@ -71,15 +76,19 @@ func TestParse(t *testing.T) {
 					{Character: "nokka", Difficulty: "invalid"},
 				},
 			},
-			fields:        fields{},
-			upsertInvoked: false,
+			fields: fields{
+				statisticsRepository: &statisticsRepositoryMock{},
+			},
+			calls: calls{
+				upsertCalls: 0,
+			},
 			expectedError: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewService(&tt.fields.statisticsRepository)
+			s := NewService(tt.fields.statisticsRepository)
 
 			err := s.Parse(tt.args.ctx, tt.args.stats)
 
@@ -87,8 +96,11 @@ func TestParse(t *testing.T) {
 				t.Errorf("didn't expect an error, got = %v", err)
 			}
 
-			if tt.fields.statisticsRepository.UpsertInvoked != tt.upsertInvoked {
-				t.Errorf("expected Upsert() invocation to be %v", tt.upsertInvoked)
+			if len(tt.fields.statisticsRepository.UpsertCalls()) != tt.calls.upsertCalls {
+				t.Errorf("expected statisticsRepository.UpsertCalls() to be called exactly %d times but was called %d times",
+					tt.calls.upsertCalls,
+					len(tt.fields.statisticsRepository.UpsertCalls()),
+				)
 			}
 		})
 	}
@@ -101,7 +113,7 @@ func TestGetCharacter(t *testing.T) {
 	}
 
 	type fields struct {
-		statisticsRepository mock.StatisticsRepository
+		statisticsRepository *statisticsRepositoryMock
 	}
 
 	tests := []struct {
@@ -121,8 +133,8 @@ func TestGetCharacter(t *testing.T) {
 				name: "nokka",
 			},
 			fields: fields{
-				statisticsRepository: mock.StatisticsRepository{
-					GetByCharacterFn: func(ctx context.Context, character string) (*domain.CharacterStatistics, error) {
+				statisticsRepository: &statisticsRepositoryMock{
+					GetByCharacterFunc: func(ctx context.Context, character string) (*domain.CharacterStatistics, error) {
 						return &domain.CharacterStatistics{
 							Normal: domain.Stats{
 								Area: map[string]domain.AreaStats{
@@ -142,8 +154,8 @@ func TestGetCharacter(t *testing.T) {
 				name: "nokka",
 			},
 			fields: fields{
-				statisticsRepository: mock.StatisticsRepository{
-					GetByCharacterFn: func(ctx context.Context, character string) (*domain.CharacterStatistics, error) {
+				statisticsRepository: &statisticsRepositoryMock{
+					GetByCharacterFunc: func(ctx context.Context, character string) (*domain.CharacterStatistics, error) {
 						return &domain.CharacterStatistics{
 							Normal: domain.Stats{
 								Area: map[string]domain.AreaStats{
@@ -176,8 +188,8 @@ func TestGetCharacter(t *testing.T) {
 				name: "nokka",
 			},
 			fields: fields{
-				statisticsRepository: mock.StatisticsRepository{
-					GetByCharacterFn: func(ctx context.Context, character string) (*domain.CharacterStatistics, error) {
+				statisticsRepository: &statisticsRepositoryMock{
+					GetByCharacterFunc: func(ctx context.Context, character string) (*domain.CharacterStatistics, error) {
 						return &domain.CharacterStatistics{
 							Normal: domain.Stats{
 								Special: map[string]int{
@@ -207,7 +219,7 @@ func TestGetCharacter(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewService(&tt.fields.statisticsRepository)
+			s := NewService(tt.fields.statisticsRepository)
 
 			stats, err := s.GetCharacter(tt.args.ctx, tt.args.name)
 

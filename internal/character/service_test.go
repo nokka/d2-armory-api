@@ -8,8 +8,6 @@ import (
 	"time"
 
 	"github.com/nokka/d2-armory-api/internal/domain"
-
-	"github.com/nokka/d2-armory-api/mock"
 )
 
 func TestParseCharacter(t *testing.T) {
@@ -20,17 +18,22 @@ func TestParseCharacter(t *testing.T) {
 	}
 
 	type fields struct {
-		characterRepository mock.CharacterRepository
-		parser              mock.Parser
+		characterRepository *characterRepositoryMock
+		parser              *parserMock
+	}
+
+	type calls struct {
+		storeCalls  int
+		updateCalls int
+		parseCalls  int
 	}
 
 	tests := []struct {
 		name          string
 		args          args
 		fields        fields
+		calls         calls
 		expectedError error
-		storeInvoked  bool
-		updateInvoked bool
 	}{
 		{
 			name: "store successful",
@@ -40,21 +43,25 @@ func TestParseCharacter(t *testing.T) {
 				cacheDuration: 1 * time.Minute,
 			},
 			fields: fields{
-				characterRepository: mock.CharacterRepository{
-					FindFn: func(ctx context.Context, id string) (*domain.Character, error) {
+				characterRepository: &characterRepositoryMock{
+					FindFunc: func(ctx context.Context, id string) (*domain.Character, error) {
 						return nil, domain.ErrNotFound
 					},
-					StoreFn: func(ctx context.Context, character *domain.Character) error {
+					StoreFunc: func(ctx context.Context, character *domain.Character) error {
 						return nil
 					},
 				},
-				parser: mock.Parser{
-					ParseFn: func(name string) (*domain.Character, error) {
+				parser: &parserMock{
+					ParseFunc: func(name string) (*domain.Character, error) {
 						return &domain.Character{}, nil
 					},
 				},
 			},
-			storeInvoked: true,
+			calls: calls{
+				storeCalls:  1,
+				parseCalls:  1,
+				updateCalls: 0,
+			},
 		},
 		{
 			name: "update successful",
@@ -64,22 +71,25 @@ func TestParseCharacter(t *testing.T) {
 				cacheDuration: 1 * time.Minute,
 			},
 			fields: fields{
-				characterRepository: mock.CharacterRepository{
-					FindFn: func(ctx context.Context, id string) (*domain.Character, error) {
+				characterRepository: &characterRepositoryMock{
+					FindFunc: func(ctx context.Context, id string) (*domain.Character, error) {
 						return &domain.Character{}, nil
 					},
-					UpdateFn: func(ctx context.Context, character *domain.Character) error {
+					UpdateFunc: func(ctx context.Context, character *domain.Character) error {
 						return nil
 					},
 				},
-				parser: mock.Parser{
-					ParseFn: func(name string) (*domain.Character, error) {
+				parser: &parserMock{
+					ParseFunc: func(name string) (*domain.Character, error) {
 						return &domain.Character{}, nil
 					},
 				},
 			},
-			storeInvoked:  false,
-			updateInvoked: true,
+			calls: calls{
+				storeCalls:  0,
+				parseCalls:  1,
+				updateCalls: 1,
+			},
 		},
 		{
 			name: "temporary update error",
@@ -89,29 +99,32 @@ func TestParseCharacter(t *testing.T) {
 				cacheDuration: 1 * time.Minute,
 			},
 			fields: fields{
-				characterRepository: mock.CharacterRepository{
-					FindFn: func(ctx context.Context, id string) (*domain.Character, error) {
+				characterRepository: &characterRepositoryMock{
+					FindFunc: func(ctx context.Context, id string) (*domain.Character, error) {
 						return &domain.Character{}, nil
 					},
-					UpdateFn: func(ctx context.Context, character *domain.Character) error {
+					UpdateFunc: func(ctx context.Context, character *domain.Character) error {
 						return fmt.Errorf("temporary error: %w", domain.ErrTemporary)
 					},
 				},
-				parser: mock.Parser{
-					ParseFn: func(name string) (*domain.Character, error) {
+				parser: &parserMock{
+					ParseFunc: func(name string) (*domain.Character, error) {
 						return &domain.Character{}, nil
 					},
 				},
 			},
-			storeInvoked:  false,
-			updateInvoked: true,
+			calls: calls{
+				storeCalls:  0,
+				parseCalls:  1,
+				updateCalls: 1,
+			},
 			expectedError: domain.ErrTemporary,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewService(tt.fields.parser, &tt.fields.characterRepository, tt.args.cacheDuration)
+			s := NewService(tt.fields.parser, tt.fields.characterRepository, tt.args.cacheDuration)
 
 			_, err := s.Parse(tt.args.ctx, tt.args.name)
 
@@ -123,12 +136,25 @@ func TestParseCharacter(t *testing.T) {
 				t.Errorf("Expected error to be = %v, got = %#v", tt.expectedError, errors.Unwrap(err))
 			}
 
-			if tt.fields.characterRepository.StoreInvoked != tt.storeInvoked {
-				t.Errorf("expected Store() invocation to be %v", tt.storeInvoked)
+			if len(tt.fields.characterRepository.StoreCalls()) != tt.calls.storeCalls {
+				t.Errorf("expected characterRepository.Store() to be called exactly %d times but was called %d times",
+					tt.calls.storeCalls,
+					len(tt.fields.characterRepository.StoreCalls()),
+				)
 			}
 
-			if tt.fields.characterRepository.UpdateInvoked != tt.updateInvoked {
-				t.Errorf("expected Update() invocation to be %v", tt.updateInvoked)
+			if len(tt.fields.parser.ParseCalls()) != tt.calls.parseCalls {
+				t.Errorf("expected parser.Parse() to be called exactly %d times but was called %d times",
+					tt.calls.parseCalls,
+					len(tt.fields.parser.ParseCalls()),
+				)
+			}
+
+			if len(tt.fields.characterRepository.UpdateCalls()) != tt.calls.updateCalls {
+				t.Errorf("expected characterRepository.UpdateCalls() to be called exactly %d times but was called %d times",
+					tt.calls.updateCalls,
+					len(tt.fields.characterRepository.UpdateCalls()),
+				)
 			}
 		})
 	}

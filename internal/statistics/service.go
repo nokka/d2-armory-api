@@ -15,6 +15,8 @@ var validDifficulties = map[string]struct{}{
 	domain.DifficultyHell:      {},
 }
 
+//go:generate moq -out ./service_mocks.go . statisticsRepository
+
 // Max data points is used to limit number of data points being returned
 // since areas for example can host 138 entries.
 const maxDataPoints = 8
