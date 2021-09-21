@@ -45,6 +45,11 @@ GET /health
 
 ---
 
+## Package dependency graph
+![Package dependency graph](docs/deps.png)
+
+---
+
 ## Data storage
 The armory API relies on [mongodb](https://www.mongodb.com/) to store the data.
 
