@@ -48,6 +48,12 @@ GET /health
 ## Package dependency graph
 ![Package dependency graph](docs/deps.png)
 
+### How to generate the graph
+[godephgraph](https://github.com/kisielk/godepgraph) is used to generate the dependency graph.
+
+```bash
+$ godepgraph -nostdlib -novendor -horizontal -onlyprefixes=github.com/nokka/d2-armory-api github.com/nokka/d2-armory-api/cmd/server | dot -Tpng -o docs/godepgraph.png
+```
 ---
 
 ## Data storage
