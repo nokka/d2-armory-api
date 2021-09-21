@@ -9,6 +9,8 @@ import (
 	"github.com/nokka/d2-armory-api/internal/domain"
 )
 
+//go:generate moq -out ./service_mocks.go . parser characterRepository
+
 // parser is the interface representation of a d2 parser the service depend on.
 type parser interface {
 	Parse(name string) (*domain.Character, error)
