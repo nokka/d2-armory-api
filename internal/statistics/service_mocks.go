@@ -19,6 +19,9 @@ var _ statisticsRepository = &statisticsRepositoryMock{}
 //
 // 		// make and configure a mocked statisticsRepository
 // 		mockedstatisticsRepository := &statisticsRepositoryMock{
+// 			DeleteFunc: func(ctx context.Context, character string) error {
+// 				panic("mock out the Delete method")
+// 			},
 // 			GetByCharacterFunc: func(ctx context.Context, character string) (*domain.CharacterStatistics, error) {
 // 				panic("mock out the GetByCharacter method")
 // 			},
@@ -32,6 +35,9 @@ var _ statisticsRepository = &statisticsRepositoryMock{}
 //
 // 	}
 type statisticsRepositoryMock struct {
+	// DeleteFunc mocks the Delete method.
+	DeleteFunc func(ctx context.Context, character string) error
+
 	// GetByCharacterFunc mocks the GetByCharacter method.
 	GetByCharacterFunc func(ctx context.Context, character string) (*domain.CharacterStatistics, error)
 
@@ -40,6 +46,13 @@ type statisticsRepositoryMock struct {
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// Delete holds details about calls to the Delete method.
+		Delete []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// Character is the character argument value.
+			Character string
+		}
 		// GetByCharacter holds details about calls to the GetByCharacter method.
 		GetByCharacter []struct {
 			// Ctx is the ctx argument value.
@@ -55,8 +68,44 @@ type statisticsRepositoryMock struct {
 			Stat domain.StatisticsRequest
 		}
 	}
+	lockDelete         sync.RWMutex
 	lockGetByCharacter sync.RWMutex
 	lockUpsert         sync.RWMutex
+}
+
+// Delete calls DeleteFunc.
+func (mock *statisticsRepositoryMock) Delete(ctx context.Context, character string) error {
+	if mock.DeleteFunc == nil {
+		panic("statisticsRepositoryMock.DeleteFunc: method is nil but statisticsRepository.Delete was just called")
+	}
+	callInfo := struct {
+		Ctx       context.Context
+		Character string
+	}{
+		Ctx:       ctx,
+		Character: character,
+	}
+	mock.lockDelete.Lock()
+	mock.calls.Delete = append(mock.calls.Delete, callInfo)
+	mock.lockDelete.Unlock()
+	return mock.DeleteFunc(ctx, character)
+}
+
+// DeleteCalls gets all the calls that were made to Delete.
+// Check the length with:
+//     len(mockedstatisticsRepository.DeleteCalls())
+func (mock *statisticsRepositoryMock) DeleteCalls() []struct {
+	Ctx       context.Context
+	Character string
+} {
+	var calls []struct {
+		Ctx       context.Context
+		Character string
+	}
+	mock.lockDelete.RLock()
+	calls = mock.calls.Delete
+	mock.lockDelete.RUnlock()
+	return calls
 }
 
 // GetByCharacter calls GetByCharacterFunc.

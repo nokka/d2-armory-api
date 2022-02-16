@@ -245,3 +245,84 @@ func TestGetCharacter(t *testing.T) {
 		})
 	}
 }
+
+func TestDelete(t *testing.T) {
+	type args struct {
+		ctx       context.Context
+		character string
+	}
+
+	type fields struct {
+		statisticsRepository *statisticsRepositoryMock
+	}
+
+	tests := []struct {
+		name          string
+		args          args
+		fields        fields
+		deleteCalls   int
+		expectedError bool
+	}{
+		{
+			name: "delete character stats successfully",
+			args: args{
+				ctx:       context.TODO(),
+				character: "nokka",
+			},
+			fields: fields{
+				statisticsRepository: &statisticsRepositoryMock{
+					DeleteFunc: func(ctx context.Context, character string) error {
+						return nil
+					},
+				},
+			},
+			deleteCalls:   1,
+			expectedError: false,
+		},
+		{
+			name: "delete character name too short",
+			args: args{
+				ctx:       context.TODO(),
+				character: "n",
+			},
+			fields: fields{
+				statisticsRepository: &statisticsRepositoryMock{},
+			},
+			deleteCalls:   0,
+			expectedError: true,
+		},
+		{
+			name: "delete character returns error",
+			args: args{
+				ctx:       context.TODO(),
+				character: "nokka",
+			},
+			fields: fields{
+				statisticsRepository: &statisticsRepositoryMock{
+					DeleteFunc: func(ctx context.Context, character string) error {
+						return errors.New("something went terribly wrong")
+					},
+				},
+			},
+			deleteCalls:   1,
+			expectedError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := NewService(tt.fields.statisticsRepository)
+
+			err := s.DeleteStats(tt.args.ctx, tt.args.character)
+
+			if (err != nil) != tt.expectedError {
+				t.Errorf("got error = %v, expectedError %v", err, tt.expectedError)
+			}
+
+			deleteCalls := len(tt.fields.statisticsRepository.DeleteCalls())
+			if deleteCalls != tt.deleteCalls {
+				t.Errorf("Delete() was called %d times, expected to be called %d times", deleteCalls, tt.deleteCalls)
+			}
+		})
+	}
+}

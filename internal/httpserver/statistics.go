@@ -17,6 +17,9 @@ type statisticsService interface {
 
 	// Parse parses a character binary.
 	Parse(ctx context.Context, stats []domain.StatisticsRequest) error
+
+	// DeleteStats deletes all stats by the given character.
+	DeleteStats(ctx context.Context, character string) error
 }
 
 // statisticsHandler is used to put parse statistics requests.
@@ -27,8 +30,9 @@ type statisticsHandler struct {
 }
 
 func (h statisticsHandler) Routes(router chi.Router) {
-	// Posting statistics requires authentication.
+	// Posting and deleting statistics requires authentication.
 	router.With(middleware.BasicAuth("statistics", h.credentials)).Post("/", h.postStatistics)
+	router.With(middleware.BasicAuth("statistics", h.credentials)).Delete("/{name}", h.deleteStatistics)
 
 	// Get statistics by character.
 	router.Get("/", h.getStatistics)
@@ -49,6 +53,18 @@ func (h statisticsHandler) postStatistics(w http.ResponseWriter, r *http.Request
 	}
 
 	h.encoder.StatusResponse(w, map[string]string{"status": "accepted"}, http.StatusAccepted)
+}
+func (h statisticsHandler) deleteStatistics(w http.ResponseWriter, r *http.Request) {
+	characterName := chi.URLParam(r, "name")
+
+	// Pass the request context in order to make use of cancellation for lower level work.
+	err := h.statisticsService.DeleteStats(r.Context(), characterName)
+	if err != nil {
+		h.encoder.Error(w, err)
+		return
+	}
+
+	h.encoder.StatusResponse(w, map[string]string{"status": "ok"}, http.StatusOK)
 }
 
 func (h statisticsHandler) getStatistics(w http.ResponseWriter, r *http.Request) {

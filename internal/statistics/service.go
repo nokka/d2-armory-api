@@ -2,6 +2,7 @@ package statistics
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -26,6 +27,7 @@ const maxDataPoints = 8
 type statisticsRepository interface {
 	GetByCharacter(ctx context.Context, character string) (*domain.CharacterStatistics, error)
 	Upsert(ctx context.Context, stat domain.StatisticsRequest) error
+	Delete(ctx context.Context, character string) error
 }
 
 // Service performs all operations on statistics.
@@ -153,6 +155,14 @@ func (s Service) Parse(ctx context.Context, stats []domain.StatisticsRequest) er
 	}
 
 	return nil
+}
+
+// DeleteStats will delete the statistics for the given character.
+func (s Service) DeleteStats(ctx context.Context, character string) error {
+	if len(character) < 2 {
+		return errors.New("character name needs a a length of at least 2")
+	}
+	return s.repository.Delete(ctx, strings.ToLower(character))
 }
 
 // NewService constructs a new statistics service with all the dependencies.

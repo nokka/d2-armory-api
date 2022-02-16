@@ -72,6 +72,22 @@ func (r *StatisticsRepository) Upsert(ctx context.Context, stat domain.Statistic
 	return nil
 }
 
+// Upsert will upsert statistics about the given character.
+func (r *StatisticsRepository) Delete(ctx context.Context, character string) error {
+	// Query to find document on.
+	query := bson.M{
+		"character": character,
+	}
+
+	_, err := r.client.Database(r.db).Collection(statCollectionName).
+		DeleteOne(ctx, query, nil)
+	if err != nil {
+		return mongoErr(err)
+	}
+
+	return nil
+}
+
 // Internal store function to create the document for the first time.
 func (r *StatisticsRepository) store(ctx context.Context, request domain.StatisticsRequest) error {
 	// Initiate character document, be explicit about the maps to avoid upsert errors on nil.
