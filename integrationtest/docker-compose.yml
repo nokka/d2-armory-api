@@ -1,0 +1,23 @@
+version: "3.4"
+services:
+  mongodb:
+    image: mongo:4.2
+    volumes:
+      - ./init.js:/docker-entrypoint-initdb.d/init.js
+    ports:
+      - "27017:27017"
+    environment:
+      - AUTH=true
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=password
+  test:
+    build:
+      context: ../
+      dockerfile: integrationtest/Dockerfile
+    environment:
+      - MONGO_USERNAME=armory
+      - MONGO_PASSWORD=not_secure_at_all
+      - STATISTICS_USER=armory-statistics
+      - STATISTICS_PASSWORD=keyboardcat
+    links:
+      - mongodb
