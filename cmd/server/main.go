@@ -89,6 +89,8 @@ func main() {
 		os.Exit(0)
 	}
 
+	fmt.Println("hej")
+
 	client, err := mongo.Connect(mgoCtx, clientOptions)
 	if err != nil {
 		log.Println("failed to connect to mongodb", err)
