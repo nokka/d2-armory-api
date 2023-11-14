@@ -105,18 +105,22 @@ func getTopAreas(areas map[string]domain.AreaStats) map[string]domain.AreaStats 
 	// Since maps are unordered by nature we need to temporarily
 	// keep the areas in a struct and return a new map.
 	type tmp struct {
-		area  string
-		kills uint
-		time  uint
+		area        string
+		kills       uint
+		time        uint
+		uniqueKills uint
+		champKills  uint
 	}
 
 	data := make([]tmp, 0)
 
 	for area, vals := range areas {
 		data = append(data, tmp{
-			area:  area,
-			kills: vals.Kills,
-			time:  vals.Time,
+			area:        area,
+			kills:       vals.Kills,
+			time:        vals.Time,
+			uniqueKills: vals.UniqueKills,
+			champKills:  vals.ChampKills,
 		})
 	}
 
@@ -128,8 +132,10 @@ func getTopAreas(areas map[string]domain.AreaStats) map[string]domain.AreaStats 
 
 	for _, v := range data[:maxDataPoints] {
 		topAreas[v.area] = domain.AreaStats{
-			Time:  v.time,
-			Kills: v.kills,
+			Time:        v.time,
+			Kills:       v.kills,
+			UniqueKills: v.uniqueKills,
+			ChampKills:  v.champKills,
 		}
 	}
 
