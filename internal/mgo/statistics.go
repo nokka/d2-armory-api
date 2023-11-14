@@ -44,7 +44,9 @@ func (r *StatisticsRepository) Upsert(ctx context.Context, stat domain.Statistic
 
 	// Difficulty updates.
 	values := map[string]interface{}{
-		fmt.Sprintf("%s.total_kills", difficulty): stat.TotalKills,
+		fmt.Sprintf("%s.total_kills", difficulty):        stat.TotalKills,
+		fmt.Sprintf("%s.total_unique_kills", difficulty): stat.TotalUniqueKills,
+		fmt.Sprintf("%s.total_champ_kills", difficulty):  stat.TotalChampKills,
 	}
 
 	// Looping over special monsters to add them to upsert.
@@ -56,6 +58,8 @@ func (r *StatisticsRepository) Upsert(ctx context.Context, stat domain.Statistic
 	for area, val := range stat.Area {
 		values[fmt.Sprintf("%s.area.%s.kills", difficulty, area)] = val.Kills
 		values[fmt.Sprintf("%s.area.%s.time", difficulty, area)] = val.Time
+		values[fmt.Sprintf("%s.area.%s.unique_kills", difficulty, area)] = val.UniqueKills
+		values[fmt.Sprintf("%s.area.%s.champ_kills", difficulty, area)] = val.ChampKills
 	}
 
 	result, err := r.client.Database(r.db).Collection(statCollectionName).
@@ -72,7 +76,7 @@ func (r *StatisticsRepository) Upsert(ctx context.Context, stat domain.Statistic
 	return nil
 }
 
-// Upsert will upsert statistics about the given character.
+// Delete will delete statistics about the given character.
 func (r *StatisticsRepository) Delete(ctx context.Context, character string) error {
 	// Query to find document on.
 	query := bson.M{
@@ -109,9 +113,11 @@ func (r *StatisticsRepository) store(ctx context.Context, request domain.Statist
 	}
 
 	stats := domain.Stats{
-		TotalKills: request.TotalKills,
-		Special:    request.Special,
-		Area:       request.Area,
+		TotalKills:       request.TotalKills,
+		TotalUniqueKills: request.TotalUniqueKills,
+		TotalChampKills:  request.TotalChampKills,
+		Special:          request.Special,
+		Area:             request.Area,
 	}
 
 	switch request.Difficulty {
